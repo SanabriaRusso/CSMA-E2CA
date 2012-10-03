@@ -19,6 +19,7 @@ component STA : public TypeII
     private:
         int backoff_counter;
         int backoff_stage;
+        int backlogged;
         Packet packet;
         FIFO <Packet> MAC_queue;
 
@@ -50,30 +51,66 @@ void STA :: Stop()
 
 void STA :: in_slot(SLOT_notification &slot)
 {
+    // print backoff values (* for stations that are not backlogged)
+    // and number of packets in the queue
     if (node_id == 0)
     {
         printf("\n");
     }
-    printf("%d\t", backoff_counter);
-    if (slot.status == 0)
+    if (backlogged)
     {
-        backoff_counter--;
+        printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
+    }else
+    {
+        printf("%d,*,%d\t", node_id,MAC_queue.QueueSize());
     }
-    if (slot.status == 1)
+    //stations that are backlogged will decrement backoff, transmit,
+    //and check the result of the last transmission
+    if (backlogged == 1)
     {
-        if (backoff_counter == 0) // I have transmitted
+        if (slot.status == 0)
         {
-            backoff_stage = 0;
-            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            backoff_counter--;
+        }
+        if (slot.status == 1)
+        {
+            if (backoff_counter == 0) // I have transmitted
+            {
+                backoff_stage = 0;
+                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                if (MAC_queue.QueueSize() == 0)
+                {
+                    backlogged = 0;
+                }else
+                {
+                    packet = MAC_queue.GetFirstPacket();
+                    MAC_queue.DelFirstPacket();
+                }
+            }
+        }
+        if (slot.status > 1)
+        {
+            if (backoff_counter == 0) // I have transmitted
+            {
+                backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            }
+        }
+        if (backoff_counter == 0)
+        {
+            out_packet(packet);
         }
     }
-    if (slot.status > 1)
+    //stations that are not backlogged will wait for a packet
+    if (backlogged == 0)
     {
-        if (backoff_counter == 0) // I have transmitted
+        if (MAC_queue.QueueSize() > 0)
         {
-            backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            backlogged = 1;
+            packet = MAC_queue.GetFirstPacket();
+            MAC_queue.DelFirstPacket();
         }
+        
     }
 };
 
