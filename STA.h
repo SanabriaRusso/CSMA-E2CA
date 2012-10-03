@@ -19,6 +19,7 @@ component STA : public TypeII
     private:
         int backoff_counter;
         int backoff_stage;
+        int backlogged;
         Packet packet;
         FIFO <Packet> MAC_queue;
 
@@ -50,30 +51,49 @@ void STA :: Stop()
 
 void STA :: in_slot(SLOT_notification &slot)
 {
-    if (node_id == 0)
+    if (backlogged == 1)
     {
-        printf("\n");
-    }
-    printf("%d\t", backoff_counter);
-    if (slot.status == 0)
-    {
-        backoff_counter--;
-    }
-    if (slot.status == 1)
-    {
-        if (backoff_counter == 0) // I have transmitted
+        if (node_id == 0)
         {
-            backoff_stage = 0;
-            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            printf("\n");
+        }
+        printf("%d\t", backoff_counter);
+        if (slot.status == 0)
+        {
+            backoff_counter--;
+        }
+        if (slot.status == 1)
+        {
+            if (backoff_counter == 0) // I have transmitted
+            {
+                backoff_stage = 0;
+                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                if (MAC_queue.QueueSize() == 0)
+                {
+                    backlogged = 0;
+                }
+            }
+        }
+        if (slot.status > 1)
+        {
+            if (backoff_counter == 0) // I have transmitted
+            {
+                backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            }
+        }
+        if (backoff_counter == 0)
+        {
+            out_packet(packet);
         }
     }
-    if (slot.status > 1)
+    if (backlogged == 0)
     {
-        if (backoff_counter == 0) // I have transmitted
+        if (MAC_queue.QueueSize > 0)
         {
-            backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+            backlogged = 1;
         }
+        
     }
 };
 
