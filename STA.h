@@ -51,7 +51,8 @@ void STA :: Stop()
 
 void STA :: in_slot(SLOT_notification &slot)
 {
-    // print backoff values, * for stations that are not backlogged
+    // print backoff values (* for stations that are not backlogged)
+    // and number of packets in the queue
     if (node_id == 0)
     {
         printf("\n");
