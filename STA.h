@@ -1,7 +1,6 @@
 #include <math.h>
 #include "Aux.h"
 #include "FIFO.h"
-#include "BackOff.h"
 
 #define CWMIN 32
 #define MAXSTAGE 5
@@ -65,7 +64,7 @@ void STA :: in_slot(SLOT_notification &slot)
 
     if (slot.status == 1)
     {
-      if (backoff_counter == 0) // I have transmitted
+      if (backoff_counter == 0); // I have transmitted
     }
 };
 
