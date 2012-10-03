@@ -48,7 +48,6 @@ void STA :: Stop()
 
 };
 
-
 void STA :: in_slot(SLOT_notification &slot)
 {
     if (node_id == 0)
@@ -56,18 +55,27 @@ void STA :: in_slot(SLOT_notification &slot)
         printf("\n");
     }
     printf("%d\t", backoff_counter);
-
     if (slot.status == 0)
     {
-      backoff_counter--;
+        backoff_counter--;
     }
-
     if (slot.status == 1)
     {
-      if (backoff_counter == 0); // I have transmitted
+        if (backoff_counter == 0) // I have transmitted
+        {
+            backoff_stage = 0;
+            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+        }
+    }
+    if (slot.status > 1)
+    {
+        if (backoff_counter == 0) // I have transmitted
+        {
+            backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+            backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+        }
     }
 };
-
 
 void STA :: in_packet(Packet &packet)
 {
