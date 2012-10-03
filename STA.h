@@ -51,13 +51,22 @@ void STA :: Stop()
 
 void STA :: in_slot(SLOT_notification &slot)
 {
+    // print backoff values, * for stations that are not backlogged
+    if (node_id == 0)
+    {
+        printf("\n");
+    }
+    if (backlogged)
+    {
+        printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
+    }else
+    {
+        printf("%d,*,%d\t", node_id,MAC_queue.QueueSize());
+    }
+    //stations that are backlogged will decrement backoff, transmit,
+    //and check the result of the last transmission
     if (backlogged == 1)
     {
-        if (node_id == 0)
-        {
-            printf("\n");
-        }
-        printf("%d\t", backoff_counter);
         if (slot.status == 0)
         {
             backoff_counter--;
@@ -87,9 +96,10 @@ void STA :: in_slot(SLOT_notification &slot)
             out_packet(packet);
         }
     }
+    //stations that are not backlogged will wait for a packet
     if (backlogged == 0)
     {
-        if (MAC_queue.QueueSize > 0)
+        if (MAC_queue.QueueSize() > 0)
         {
             backlogged = 1;
         }
