@@ -76,6 +76,7 @@ void STA :: in_slot(SLOT_notification &slot)
         {
             if (backoff_counter == 0) // I have transmitted
             {
+                MAC_queue.DelFirstPacket();
                 backoff_stage = 0;
                 backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
                 if (MAC_queue.QueueSize() == 0)
@@ -84,7 +85,6 @@ void STA :: in_slot(SLOT_notification &slot)
                 }else
                 {
                     packet = MAC_queue.GetFirstPacket();
-                    MAC_queue.DelFirstPacket();
                 }
             }
         }
@@ -108,7 +108,6 @@ void STA :: in_slot(SLOT_notification &slot)
         {
             backlogged = 1;
             packet = MAC_queue.GetFirstPacket();
-            MAC_queue.DelFirstPacket();
         }
         
     }
