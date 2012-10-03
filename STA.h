@@ -81,6 +81,10 @@ void STA :: in_slot(SLOT_notification &slot)
                 if (MAC_queue.QueueSize() == 0)
                 {
                     backlogged = 0;
+                }else
+                {
+                    packet = MAC_queue.GetFirstPacket();
+                    MAC_queue.DelFirstPacket();
                 }
             }
         }
@@ -103,6 +107,8 @@ void STA :: in_slot(SLOT_notification &slot)
         if (MAC_queue.QueueSize() > 0)
         {
             backlogged = 1;
+            packet = MAC_queue.GetFirstPacket();
+            MAC_queue.DelFirstPacket();
         }
         
     }
