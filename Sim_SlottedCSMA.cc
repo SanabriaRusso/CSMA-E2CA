@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+//Jaume's Implementation
+
 //#include "/home/boris/RSoftware/sense31/code/common/cost.h"
 //#include "/home/boris/Dropbox/Boris/Research/Tools/SlottedCSMA/COST/cost.h"
 #include "./COST/cost.h"
