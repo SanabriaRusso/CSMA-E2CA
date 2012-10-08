@@ -96,10 +96,6 @@ void STA :: in_slot(SLOT_notification &slot)
                 backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
             }
         }
-        if (backoff_counter == 0)
-        {
-            out_packet(packet);
-        }
     }
     //stations that are not backlogged will wait for a packet
     if (backlogged == 0)
@@ -110,6 +106,11 @@ void STA :: in_slot(SLOT_notification &slot)
             packet = MAC_queue.GetFirstPacket();
         }
         
+    }
+    //transmit if backoff counter reaches zero
+    if (backoff_counter == 0)
+    {
+        out_packet(packet);
     }
 };
 
