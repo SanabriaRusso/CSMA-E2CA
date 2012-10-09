@@ -2,6 +2,7 @@
 #include <iostream>
 #include "Aux.h"
 #include "FIFO.h"
+#include "stats/stats.h"
 
 #define CWMIN 32
 #define MAXSTAGE 5
@@ -21,6 +22,11 @@ component STA : public TypeII
         int K; //max queue size
 	
         double observed_slots;
+        double successful_slots;
+        double collision_slots;
+        double empty_slots;
+        
+        
         double collisions;
         double total_transmissions;
         double successful_transmissions;
@@ -62,6 +68,10 @@ void STA :: Start()
     packet.send_time = SimTime();
 
     observed_slots = 0;
+    successful_slots = 0;
+    collision_slots = 0;
+    empty_slots = 0;
+    
     txAttempt = 0;
     collisions = 0;
     successful_transmissions = 0;
@@ -84,7 +94,8 @@ void STA :: Stop()
     cout << "Collisions:" << " " << collisions << endl;
     cout << "*** DETAILED ***" << endl;
     cout << "TAU = " << total_transmissions / observed_slots << " |" << " p = " << collisions / total_transmissions << endl;
-    cout << "Throughput = " << successful_transmissions / SimTime() << " [packets/second]" << endl;
+    cout << "Throughput (Boris) = " << successful_transmissions / SimTime() << " [packets/second]" << endl;
+    cout << "Throughput (Jaume) = " << stats(successful_slots, empty_slots, collision_slots, packet.L) << endl;
     cout << "Blocking Probability = " << blocked_packets / incoming_packets << endl;
     cout << "Delay (queueing + service) = " << txDelay / non_blocked_packets << endl;
     cout << endl;
@@ -98,7 +109,7 @@ void STA :: in_slot(SLOT_notification &slot)
     // and number of packets in the queue
     if (node_id == 0)
     {
-        printf("\n");
+        printf("\n");  
     }
 
     if (backlogged)
@@ -117,12 +128,14 @@ void STA :: in_slot(SLOT_notification &slot)
         if (slot.status == 0)
         {
             backoff_counter--;
+            empty_slots++;
         }
         if (slot.status == 1)
         {
             if (backoff_counter == 0) // I have transmitted
             {
                 successful_transmissions++;
+                successful_slots++;
                 txDelay += SimTime() - packet.send_time;
 
                 MAC_queue.DelFirstPacket();
@@ -146,6 +159,7 @@ void STA :: in_slot(SLOT_notification &slot)
             {
                 txAttempt++;
                 collisions++;
+                collision_slots++;
                 
                 backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
                 backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);

@@ -120,11 +120,11 @@ int main(int argc, char *argv[])
 
 
 	int MaxSimIter = 1;
-	double SimTime = atof(argv[2]);
-	int NumNodes = atoi(argv[3]);
-	int PacketLength = atoi(argv[4]);
-	double Bandwidth = atof(argv[5]);
-	int Batch = atoi(argv[6]);
+	double SimTime = atof(argv[1]);
+	int NumNodes = atoi(argv[2]);
+	int PacketLength = atoi(argv[3]);
+	double Bandwidth = atof(argv[4]);
+	int Batch = atoi(argv[5]);
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
