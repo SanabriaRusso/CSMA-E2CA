@@ -20,23 +20,23 @@ component STA : public TypeII
         int node_id;
         int K; //max queue size
 	
-	double observed_slots;
-	double collisions;
-	double total_transmissions;
-	double successful_transmissions;
+        double observed_slots;
+        double collisions;
+        double total_transmissions;
+        double successful_transmissions;
 
-	double incoming_packets;
-  	double non_blocked_packets;
-	double blocked_packets;
+        double incoming_packets;
+        double non_blocked_packets;
+        double blocked_packets;
 
-	double txDelay;
+        double txDelay;
 
     private:
         int backoff_counter;
         int backoff_stage;
         int backlogged;
 
-	int txAttempt;	
+        int txAttempt;	
 
         Packet packet;
         FIFO <Packet> MAC_queue;
@@ -78,11 +78,11 @@ void STA :: Start()
 void STA :: Stop()
 {
 	cout << endl;
-        cout << "--- Station " << node_id << " stats ---" << endl;
+    cout << "--- Station " << node_id << " stats ---" << endl;
 
 	cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
-        cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        
-        cout << "Collisions:" << " " << collisions << endl;
+    cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        
+    cout << "Collisions:" << " " << collisions << endl;
 
 	cout << "*** DETAILED ***" << endl;
 	cout << "TAU = " << total_transmissions / observed_slots << " |" << " p = " << collisions / total_transmissions << endl;
@@ -125,9 +125,8 @@ void STA :: in_slot(SLOT_notification &slot)
         {
             if (backoff_counter == 0) // I have transmitted
             {
-
-		successful_transmissions++;
-		txDelay += SimTime() - packet.send_time;
+                successful_transmissions++;
+                txDelay += SimTime() - packet.send_time;
 
                 MAC_queue.DelFirstPacket();
 
@@ -143,19 +142,26 @@ void STA :: in_slot(SLOT_notification &slot)
                 }
             }
         }
+        
         if (slot.status > 1)
         {
             if (backoff_counter == 0) // I have transmitted
             {
-		txAttempt++;
-		collisions++;
+                txAttempt++;
+                collisions++;
 
-		if (txAttempt > MAX_RET)
-		{
-		    txAttempt = 0;
-		    backoff_stage = 0;
-		    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-		}
+                if (txAttempt > MAX_RET)
+                {
+                    txAttempt = 0;
+                    backoff_stage = 0;
+                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    
+                    //Grabbing a new packet and removing it from the queue
+                    //The previous packet is discarded
+                    packet = MAC_queue.GetFirstPacket();
+                    MAC_queue.DelFirstPacket();
+                    
+                }
 		    
 		
                 backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
@@ -179,7 +185,7 @@ void STA :: in_slot(SLOT_notification &slot)
     //transmit if backoff counter reaches zero
     if (backoff_counter == 0)
     {
-	total_transmissions++;
+        total_transmissions++;
         out_packet(packet);
     }
 };
@@ -190,7 +196,7 @@ void STA :: in_packet(Packet &packet)
 
     if (MAC_queue.QueueSize() < K)
     {
-	non_blocked_packets++;
+        non_blocked_packets++;
         MAC_queue.PutPacket(packet);
     }else
     {

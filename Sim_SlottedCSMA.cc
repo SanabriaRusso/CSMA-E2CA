@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <time.h>
 
-//Jaume's Implementation
-
 //#include "/home/boris/RSoftware/sense31/code/common/cost.h"
 //#include "/home/boris/Dropbox/Boris/Research/Tools/SlottedCSMA/COST/cost.h"
 #include "./COST/cost.h"
@@ -114,14 +112,14 @@ void SlottedCSMA :: Stop()
 
 int main(int argc, char *argv[])
 {
-	if(argc < 6) 
+	if(argc < 5) 
 	{
-		printf("./XXXX SimIter SimTime NumNodes PacketLength Bandwidth Batch\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch\n");
 		return 0;
 	}
 
 
-	int MaxSimIter = atoi(argv[1]);
+	int MaxSimIter = 1;
 	double SimTime = atof(argv[2]);
 	int NumNodes = atoi(argv[3]);
 	int PacketLength = atoi(argv[4]);
@@ -129,19 +127,17 @@ int main(int argc, char *argv[])
 	int Batch = atoi(argv[6]);
 
 
-	for(int SimIter=0;SimIter<MaxSimIter;SimIter++)
-	{
-		printf("####################### Simulation (%d) #######################\n",SimIter); 	
+	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
 		
-		SlottedCSMA test;
+	SlottedCSMA test;
 
-		test.Seed=(long int)6*rand();
-		test.StopTime(SimTime);
+	test.Seed=(long int)6*rand();
+	test.StopTime(SimTime);
 
-		test.Setup(SimIter,NumNodes,PacketLength,Bandwidth,Batch);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch);
 	
-		test.Run();
-	}
+	test.Run();
+
 
 	return(0);
 };
