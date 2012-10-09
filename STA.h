@@ -5,7 +5,7 @@
 
 #define CWMIN 32
 #define MAXSTAGE 5
-#define MAX_RET 4
+#define MAX_RET 7 //to be discussed
 
 using namespace std;
 
@@ -146,12 +146,15 @@ void STA :: in_slot(SLOT_notification &slot)
             {
                 txAttempt++;
                 collisions++;
+                
+                backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
 
                 if (txAttempt > MAX_RET)
                 {
                     txAttempt = 0;
                     backoff_stage = 0;
-                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
                     
                     //Grabbing a new packet and removing it from the queue
                     //The previous packet is discarded
@@ -159,10 +162,6 @@ void STA :: in_slot(SLOT_notification &slot)
                     MAC_queue.DelFirstPacket();
                     
                 }
-		    
-		
-                backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
             }
         }
 
