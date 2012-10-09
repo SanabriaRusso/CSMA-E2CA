@@ -79,18 +79,15 @@ void STA :: Stop()
 {
 	cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
-
-	cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
+    cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
     cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        
     cout << "Collisions:" << " " << collisions << endl;
-
-	cout << "*** DETAILED ***" << endl;
-	cout << "TAU = " << total_transmissions / observed_slots << " |" << " p = " << collisions / total_transmissions << endl;
-	cout << "Throughput = " << successful_transmissions / SimTime() << " [packets/second]" << endl;
-	cout << "Blocking Probability = " << blocked_packets / incoming_packets << endl;
-	cout << "Delay (queueing + service) = " << txDelay / non_blocked_packets << endl;
-
-	cout << endl;
+    cout << "*** DETAILED ***" << endl;
+    cout << "TAU = " << total_transmissions / observed_slots << " |" << " p = " << collisions / total_transmissions << endl;
+    cout << "Throughput = " << successful_transmissions / SimTime() << " [packets/second]" << endl;
+    cout << "Blocking Probability = " << blocked_packets / incoming_packets << endl;
+    cout << "Delay (queueing + service) = " << txDelay / non_blocked_packets << endl;
+    cout << endl;
 };
 
 void STA :: in_slot(SLOT_notification &slot)
