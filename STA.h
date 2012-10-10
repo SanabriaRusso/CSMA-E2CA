@@ -5,7 +5,7 @@
 #include "stats/stats.h"
 
 #define CWMIN 32
-#define MAXSTAGE 4
+#define MAXSTAGE 5
 
 //Large number in MAX_RET is to comply with Bianchi's tests, which do not consider
 //a maximum retransmissions. Suggested value is MAXSTAGE+1
@@ -109,7 +109,7 @@ void STA :: in_slot(SLOT_notification &slot)
     // and number of packets in the queue
     if (node_id == 0)
     {
-        printf("\n");  
+        //printf("\n");  
     }
 
     if (backlogged)
@@ -131,10 +131,7 @@ void STA :: in_slot(SLOT_notification &slot)
             empty_slots++;
         }
         if (slot.status == 1)
-        {
-            
-            //Other stations transmit
-            
+        {             
             if (backoff_counter == 0) // I have transmitted
             {
                 successful_transmissions++;
@@ -157,12 +154,18 @@ void STA :: in_slot(SLOT_notification &slot)
                     packet = MAC_queue.GetFirstPacket();
                 }
             }
+            else
+            {
+                //Other stations transmit
+                //Decrement backoff_counter
+                backoff_counter--;
+                
+            }
+            
         }
         
         if (slot.status > 1)
-        {
-            //Other stations collide
-            
+        {   
             if (backoff_counter == 0) // I have transmitted
             {
                 txAttempt++;
@@ -184,6 +187,11 @@ void STA :: in_slot(SLOT_notification &slot)
                     MAC_queue.DelFirstPacket();
                     
                 }
+            }
+            else
+            {
+                //Other stations collide
+                backoff_counter--;
             }
         }
 
