@@ -1,8 +1,8 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
+#include <iostream>
 
 //#include "/home/boris/RSoftware/sense31/code/common/cost.h"
 //#include "/home/boris/Dropbox/Boris/Research/Tools/SlottedCSMA/COST/cost.h"
@@ -15,6 +15,8 @@
 #include "BatchPoissonSource.h"
 //#include "SatNode.h"
 //#include "SatNodeKenDuffy.h"
+
+using namespace std;
 
 component SlottedCSMA : public CostSimEng
 {
@@ -91,20 +93,42 @@ void SlottedCSMA :: Stop()
 {
 	double p_res = 0;
 	double delay_res = 0;
+
+	float avg_tau = 0;
+	float std_tau = 0;
+	
 	for(int n=0;n<Nodes;n++)
 	{
+	    avg_tau += ((float)stas[n].total_transmissions / (float)stas[n].observed_slots);
+	    
 		//p_res+=(stas[n].collisions / stas[n].total_transmissions);
 		//delay_res+=(stas[n].delay / stas[n].non_blocked_packets);
+		
 	}
 	p_res = p_res/Nodes;
 	delay_res = delay_res/Nodes;
+	
+	avg_tau = avg_tau/Nodes;
+	
+	//Computing the standard deviation of each of the station's tau
+	for(int i=0; i<Nodes; i++)
+	{
+	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
+	}
+	
+	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
 
-	FILE *res;
+	/*FILE *res;
 	res = fopen("Results/res.txt","at");
 	fprintf(res,"%d %d %f %d %d %f %f\n",SimId,Nodes,Bandwidth_,PacketLength_,Batch_,p_res,delay_res);
 	fclose(res);
 	printf("SimId Nodes Bandwidth per node Packet Length MaxBatch | Collision Prob | Total Delay\n");
-	printf("%d %d %f %d %d %f %f\n",SimId,Nodes,Bandwidth_,PacketLength_,Batch_,p_res,delay_res);
+	printf("%d %d %f %d %d %f %f\n",SimId,Nodes,Bandwidth_,PacketLength_,Batch_,p_res,delay_res);*/
+	
+	cout << endl << endl;
+	cout << "--- Overall Statistics ---" << endl;
+	cout << "Average TAU = " << avg_tau << endl;
+	cout << "Standard Deviation = " << (double)std_tau << endl << endl;
 
 };
 

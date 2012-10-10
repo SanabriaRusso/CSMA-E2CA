@@ -3,7 +3,7 @@
 
 using namespace std;
 
-double stats(double successful_slots, double empty_slots, double collision_slots, int payload){
+double stats(int successful_slots, int empty_slots, int collision_slots, int payload){
     
     double Ts, Tc;
     double throughput;

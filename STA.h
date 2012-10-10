@@ -5,8 +5,12 @@
 #include "stats/stats.h"
 
 #define CWMIN 32
-#define MAXSTAGE 5
-#define MAX_RET 7 //to be discussed
+#define MAXSTAGE 4
+
+//Large number in MAX_RET is to comply with Bianchi's tests, which do not consider
+//a maximum retransmissions. Suggested value is MAXSTAGE+1
+#define MAX_RET 1000
+
 
 using namespace std;
 
@@ -21,19 +25,17 @@ component STA : public TypeII
         int node_id;
         int K; //max queue size
 	
-        double observed_slots;
-        double successful_slots;
-        double collision_slots;
-        double empty_slots;
+        long int observed_slots;
+        long int empty_slots;
         
         
-        double collisions;
-        double total_transmissions;
-        double successful_transmissions;
+        long int collisions;
+        long int total_transmissions;
+        long int successful_transmissions;
 
-        double incoming_packets;
-        double non_blocked_packets;
-        double blocked_packets;
+        long int incoming_packets;
+        long int non_blocked_packets;
+        long int blocked_packets;
 
         double txDelay;
 
@@ -68,8 +70,6 @@ void STA :: Start()
     packet.send_time = SimTime();
 
     observed_slots = 0;
-    successful_slots = 0;
-    collision_slots = 0;
     empty_slots = 0;
     
     txAttempt = 0;
@@ -93,11 +93,11 @@ void STA :: Stop()
     cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        
     cout << "Collisions:" << " " << collisions << endl;
     cout << "*** DETAILED ***" << endl;
-    cout << "TAU = " << total_transmissions / observed_slots << " |" << " p = " << collisions / total_transmissions << endl;
-    cout << "Throughput (Boris) = " << successful_transmissions / SimTime() << " [packets/second]" << endl;
-    cout << "Throughput (Jaume) = " << stats(successful_slots, empty_slots, collision_slots, packet.L) << endl;
-    cout << "Blocking Probability = " << blocked_packets / incoming_packets << endl;
-    cout << "Delay (queueing + service) = " << txDelay / non_blocked_packets << endl;
+    cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
+    cout << "Throughput (Boris) = " << (float)successful_transmissions / SimTime() << " [packets/second]" << endl;
+    cout << "Throughput (Jaume) = " << stats(successful_transmissions, empty_slots, collisions, packet.L) << " [bps]" << endl;
+    cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
+    cout << "Delay (queueing + service) = " << (float)txDelay / (float)non_blocked_packets << endl;
     cout << endl;
 };
 
@@ -114,10 +114,10 @@ void STA :: in_slot(SLOT_notification &slot)
 
     if (backlogged)
     {
-        printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
+        //printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
     }else
     {
-        printf("%d,*,%d\t", node_id,MAC_queue.QueueSize());
+       //printf("%d,*,%d\t", node_id,MAC_queue.QueueSize());
     }
 
     //stations that are backlogged will decrement backoff, transmit,
@@ -132,10 +132,16 @@ void STA :: in_slot(SLOT_notification &slot)
         }
         if (slot.status == 1)
         {
+            
+            //Other stations transmit
+            
             if (backoff_counter == 0) // I have transmitted
             {
                 successful_transmissions++;
-                successful_slots++;
+                
+                //Resetting transmission attempt because successful TX
+                txAttempt = 0;
+                
                 txDelay += SimTime() - packet.send_time;
 
                 MAC_queue.DelFirstPacket();
@@ -155,11 +161,13 @@ void STA :: in_slot(SLOT_notification &slot)
         
         if (slot.status > 1)
         {
+            //Other stations collide
+            
             if (backoff_counter == 0) // I have transmitted
             {
                 txAttempt++;
                 collisions++;
-                collision_slots++;
+                
                 
                 backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
                 backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
