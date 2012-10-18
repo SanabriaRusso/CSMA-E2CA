@@ -9,7 +9,7 @@
 
 //Large number in MAX_RET is to comply with Bianchi's tests, which do not consider
 //a maximum retransmissions. Suggested value is MAXSTAGE+1
-#define MAX_RET 1000
+#define MAX_RET 6
 
 
 using namespace std;
@@ -66,7 +66,7 @@ void STA :: Start()
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;
     packet.source = node_id;
-    packet.L = 1000;
+    packet.L = 1024;
     packet.send_time = SimTime();
 
     observed_slots = 0;
