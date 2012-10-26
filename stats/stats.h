@@ -22,7 +22,6 @@ double stats(int successful_slots, int empty_slots, int collision_slots, int pay
     const double SLOT_TIME = 20E-6;
     const double DIFS2 = 50E-6;
     const double SIFS2 = 10E-6;
-    //const double Te = SLOT = 20E-6;
     const double EIFS2 = SIFS2 + DIFS2 + ((144 + 48 + 112)/RBASIC);
 
     //L = 1500*8;
@@ -33,6 +32,8 @@ double stats(int successful_slots, int empty_slots, int collision_slots, int pay
     Ts = ((PCLP_PREAMBLE + PCLP_HEADER)/PHY_RATE) + ((L + MAC_HEADER)/RDATA) + SIFS2 + ((PCLP_PREAMBLE + PCLP_HEADER)/PHY_RATE) + (L_ACK/RBASIC) + DIFS2;
     Tc = ((PCLP_PREAMBLE + PCLP_HEADER)/RBASIC)+ ((L+MAC_HEADER)/RDATA) + EIFS2;
     
+    //cout << "Ts: " << Ts << endl;
+    //cout << "Tc: " << Tc << endl;
     
     throughput = successful_slots*L/(empty_slots*SLOT_TIME+successful_slots*Ts+collision_slots*Tc);
     

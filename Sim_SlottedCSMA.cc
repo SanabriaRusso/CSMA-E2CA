@@ -13,6 +13,7 @@
 #include "Channel.h"
 #include "STA.h"
 #include "BatchPoissonSource.h"
+#include "stats/stats.h"
 //#include "SatNode.h"
 //#include "SatNodeKenDuffy.h"
 
@@ -21,7 +22,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickyness);
 		void Stop();
 		void Start();		
 
@@ -40,7 +41,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickyness)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -58,6 +59,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		// Node
 		stas[n].node_id = n;
 		stas[n].K = 1000;
+		stas[n].stickyness = Stickyness;
 
 
 		// Traffic Source
@@ -93,6 +95,11 @@ void SlottedCSMA :: Stop()
 {
 	double p_res = 0;
 	double delay_res = 0;
+	
+	double overall_successful_tx = 0;
+	double overall_collisions = 0;
+	double overall_empty = 0;
+	
 
 	float avg_tau = 0;
 	float std_tau = 0;
@@ -100,11 +107,22 @@ void SlottedCSMA :: Stop()
 	for(int n=0;n<Nodes;n++)
 	{
 	    avg_tau += ((float)stas[n].total_transmissions / (float)stas[n].observed_slots);
+	    overall_successful_tx += stas[n].successful_transmissions;
+	    overall_collisions += stas[n].collisions;
 	    
 		//p_res+=(stas[n].collisions / stas[n].total_transmissions);
 		//delay_res+=(stas[n].delay / stas[n].non_blocked_packets);
 		
 	}
+	overall_successful_tx = channel.succesful_slots;
+	overall_collisions = channel.collision_slots;
+	overall_empty = channel.empty_slots;
+	
+	
+	/*cout << "Success: " << overall_successful_tx << endl;
+	cout << "Collisions: " << overall_collisions << endl;
+	cout << "Empty: " << overall_empty << endl;*/
+	
 	p_res = p_res/Nodes;
 	delay_res = delay_res/Nodes;
 	
@@ -128,7 +146,9 @@ void SlottedCSMA :: Stop()
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
 	cout << "Average TAU = " << avg_tau << endl;
-	cout << "Standard Deviation = " << (double)std_tau << endl << endl;
+	cout << "Standard Deviation = " << (double)std_tau << endl;
+	cout << "Overall Throughput = " << stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_)<< endl << endl; 
+	
 
 };
 
@@ -138,10 +158,11 @@ int main(int argc, char *argv[])
 {
 	if(argc < 5) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickyness\n");
 		return 0;
 	}
-
+	
+	int Stickyness;
 
 	int MaxSimIter = 1;
 	double SimTime = atof(argv[1]);
@@ -149,6 +170,12 @@ int main(int argc, char *argv[])
 	int PacketLength = atoi(argv[3]);
 	double Bandwidth = atof(argv[4]);
 	int Batch = atoi(argv[5]);
+	
+	if(atoi(argv[6]) > 0){ 
+	    Stickyness = atoi(argv[6]);
+	}else{
+	    Stickyness = 0;
+	}
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
@@ -158,7 +185,7 @@ int main(int argc, char *argv[])
 	test.Seed=(long int)6*rand();
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickyness);
 	
 	test.Run();
 

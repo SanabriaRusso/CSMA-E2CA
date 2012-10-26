@@ -2,12 +2,13 @@
 	Channel Component
 */
 
-#define RATE 1E6 // Data Transmission Rate
+#define DATARATE 11E6 // Data Transmission Rate
+#define PHYRATE 1E6
 
 #define SLOT 20E-6 // Empty Slot
 #define DIFS 50E-6
 #define SIFS 10E-6
-#define L_ack 120
+#define L_ack 112
 			
 #include "Aux.h"
 
@@ -39,8 +40,9 @@ component Channel : public TypeII
 
 	private:
 		int number_of_transmissions_in_current_slot;
-		double succ_tx_duration, collision_duration; // Depend on the packet(s) size(s)
+		double succ_tx_duration, collision_duration; // Depends on the packet(s) size(s)
 		double L_max;
+		int MAC_H, PCLP_PREAMBLE, PCLP_HEADER;
 
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
@@ -65,6 +67,11 @@ void Channel :: Start()
 	total_slots = 0;
 
 	L_max = 0;
+	
+	MAC_H = 272;
+	PCLP_PREAMBLE = 144; 
+	PCLP_HEADER = 48;
+	
 
 	slot_time.Set(SimTime()); // Let's go!		
 
@@ -72,6 +79,7 @@ void Channel :: Start()
 
 void Channel :: Stop()
 {
+	printf("\n\n");
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
 };
@@ -84,10 +92,10 @@ void Channel :: NewSlot(trigger_t &)
 
 	slot.status = number_of_transmissions_in_current_slot;
 
-	number_of_transmissions_in_current_slot=0;
+	number_of_transmissions_in_current_slot = 0;
 	L_max = 0;
 
-	for(int n=0;n<Nodes;n++) out_slot[n](slot); // We send the SLOT notification to all connected nodes
+	for(int n = 0; n < Nodes; n++) out_slot[n](slot); // We send the SLOT notification to all connected nodes
 
 	rx_time.Set(SimTime());	// To guarantee that the system works correctly. :)
 }
@@ -124,7 +132,12 @@ void Channel :: in_packet(Packet &packet)
 	
 	//printf("Channel: %d\n",number_of_transmissions_in_current_slot);
 
-	succ_tx_duration = L_max/RATE + SIFS + L_ack / RATE + DIFS + SLOT;
-	collision_duration = L_max/RATE + SIFS + L_ack / RATE + DIFS + SLOT;
+	//succ_tx_duration = L_max/RATE + SIFS + L_ack / RATE + DIFS + SLOT;
+	//collision_duration = L_max/RATE + SIFS + L_ack / RATE + DIFS + SLOT;
+	
+	succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
+	collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);
+	
+	//printf("%f, %f\n", succ_tx_duration, collision_duration);
 }
 

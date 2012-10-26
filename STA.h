@@ -2,13 +2,11 @@
 #include <iostream>
 #include "Aux.h"
 #include "FIFO.h"
-#include "stats/stats.h"
 
 #define CWMIN 32
 #define MAXSTAGE 5
 
-//Large number in MAX_RET is to comply with Bianchi's tests, which do not consider
-//a maximum retransmissions. Suggested value is MAXSTAGE+1
+//Suggested value is MAXSTAGE+1
 #define MAX_RET 6
 
 
@@ -24,6 +22,7 @@ component STA : public TypeII
     public:
         int node_id;
         int K; //max queue size
+        int stickyness;
 	
         long int observed_slots;
         long int empty_slots;
@@ -38,6 +37,8 @@ component STA : public TypeII
         long int blocked_packets;
 
         double txDelay;
+        
+        double throughput;
 
     private:
         int backoff_counter;
@@ -82,11 +83,15 @@ void STA :: Start()
     blocked_packets = 0;
 
     txDelay = 0;
+    
+    throughput = 0;
 
 };
 
 void STA :: Stop()
 {
+    
+      
 	cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
     cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
@@ -94,8 +99,7 @@ void STA :: Stop()
     cout << "Collisions:" << " " << collisions << endl;
     cout << "*** DETAILED ***" << endl;
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
-    cout << "Throughput (Boris) = " << (float)successful_transmissions / SimTime() << " [packets/second]" << endl;
-    cout << "Throughput (Jaume) = " << stats(successful_transmissions, empty_slots, collisions, packet.L) << " [bps]" << endl;
+    cout << "Throughput of this station (Boris) = " << packet.L*8*(float)successful_transmissions / SimTime() << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
     cout << "Delay (queueing + service) = " << (float)txDelay / (float)non_blocked_packets << endl;
     cout << endl;
@@ -144,8 +148,15 @@ void STA :: in_slot(SLOT_notification &slot)
                 MAC_queue.DelFirstPacket();
 
                 backoff_stage = 0;
-                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-
+                
+                if(stickyness == 0)
+                {
+                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);    
+                }else
+                { //just considering two values for stickyness {0,1}
+                    backoff_counter = CWMIN/2;
+                }
+               
                 if (MAC_queue.QueueSize() == 0)
                 {
                     backlogged = 0;

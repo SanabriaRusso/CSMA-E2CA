@@ -1,0 +1,12 @@
+#This document contains the throughput calculations and simulated.
+#The data contained is derived from analytic_function_retries.m as well as the execution of the simulator ./Sim_SlottedCSMA 500 <sta> 1024 11000000 1
+#1. number of stations | 2. tau (analytic) | 3. Throughput (analytic) | 4. tau (sim) | 5. Throughput based on channel stats (sim) | 6. Throughput based on packets w stickyness (sim) | 7. Throughput based on packets w/o stickyness
+#1    2        3         4         5           6            7
+2 0.057044 5.3513e+06 0.0568617 5.3370e+06 5.55218e+06 5.34454e+06
+5 0.047851 5.3018e+06 0.047786 5.3037e+06 5.96452e+06 5.2929e+06
+10 0.037375 5.0127e+06 0.0374683 5.0091e+06 6.11512e+06 5.00845e+06
+15 0.030947 4.7942e+06 0.0308701 4.7971e+06 6.13927e+06 4.79414e+06
+20 0.026688 4.6250e+06 0.0266709 4.6322e+06 5.04679e+06 4.63041e+06
+25 0.023657 4.4862e+06 0.0236674 4.4937e+06 4.64459e+06 4.49313e+06
+30 0.021381 4.3674e+06 0.0213873 4.3744e+06 4.34401e+06 4.37513e+06
+50 0.015994 4.0042e+06 0.0158523 4.0224e+06 3.49384e+06 4.01329e+06
