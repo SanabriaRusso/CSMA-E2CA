@@ -71,6 +71,7 @@ void Channel :: Start()
 	MAC_H = 272;
 	PCLP_PREAMBLE = 144; 
 	PCLP_HEADER = 48;
+
 	
 
 	slot_time.Set(SimTime()); // Let's go!		
@@ -111,12 +112,12 @@ void Channel :: EndReceptionTime(trigger_t &)
 	if(number_of_transmissions_in_current_slot == 1)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
-		succesful_slots++;
+		succesful_slots ++;
 	}
 	if(number_of_transmissions_in_current_slot > 1)
 	{
 		slot_time.Set(SimTime()+collision_duration);
-		collision_slots++;
+		collision_slots ++;
 	}
 
 	total_slots++;
@@ -127,7 +128,7 @@ void Channel :: in_packet(Packet &packet)
 {
 
 	if(packet.L > L_max) L_max = packet.L;
-
+	
 	number_of_transmissions_in_current_slot++;
 	
 	//printf("Channel: %d\n",number_of_transmissions_in_current_slot);

@@ -22,7 +22,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickyness);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare);
 		void Stop();
 		void Start();		
 
@@ -41,7 +41,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickyness)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -59,7 +59,10 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		// Node
 		stas[n].node_id = n;
 		stas[n].K = 1000;
-		stas[n].stickyness = Stickyness;
+		stas[n].system_stickiness = Stickiness;
+		stas[n].station_stickiness = 0;
+		stas[n].stageStickiness = stageStickiness;
+		stas[n].fairShare = fairShare;
 
 
 		// Traffic Source
@@ -103,6 +106,7 @@ void SlottedCSMA :: Stop()
 
 	float avg_tau = 0;
 	float std_tau = 0;
+
 	
 	for(int n=0;n<Nodes;n++)
 	{
@@ -147,7 +151,8 @@ void SlottedCSMA :: Stop()
 	cout << "--- Overall Statistics ---" << endl;
 	cout << "Average TAU = " << avg_tau << endl;
 	cout << "Standard Deviation = " << (double)std_tau << endl;
-	cout << "Overall Throughput = " << stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_)<< endl << endl; 
+	cout << "Overall Throughput = " << stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_)<< endl;
+	
 	
 
 };
@@ -156,13 +161,15 @@ void SlottedCSMA :: Stop()
 
 int main(int argc, char *argv[])
 {
-	if(argc < 5) 
+	if(argc < 2) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickyness\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare\n");
 		return 0;
 	}
 	
-	int Stickyness;
+	int Stickiness;
+	int stageStickiness; //keep the current BO stage, until queue's empty
+	int fairShare;
 
 	int MaxSimIter = 1;
 	double SimTime = atof(argv[1]);
@@ -170,12 +177,9 @@ int main(int argc, char *argv[])
 	int PacketLength = atoi(argv[3]);
 	double Bandwidth = atof(argv[4]);
 	int Batch = atoi(argv[5]);
-	
-	if(atoi(argv[6]) > 0){ 
-	    Stickyness = atoi(argv[6]);
-	}else{
-	    Stickyness = 0;
-	}
+	Stickiness = atoi(argv[6]);
+	stageStickiness = atoi(argv[7]);
+	fairShare = atoi(argv[8]);
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
@@ -185,7 +189,7 @@ int main(int argc, char *argv[])
 	test.Seed=(long int)6*rand();
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickyness);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare);
 	
 	test.Run();
 

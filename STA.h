@@ -22,7 +22,10 @@ component STA : public TypeII
     public:
         int node_id;
         int K; //max queue size
-        int stickyness;
+        int system_stickiness; //global stickiness
+        int station_stickiness;
+        int stageStickiness;
+        int fairShare;
 	
         long int observed_slots;
         long int empty_slots;
@@ -69,7 +72,7 @@ void STA :: Start()
     packet.source = node_id;
     packet.L = 1024;
     packet.send_time = SimTime();
-
+    
     observed_slots = 0;
     empty_slots = 0;
     
@@ -108,7 +111,9 @@ void STA :: Stop()
 void STA :: in_slot(SLOT_notification &slot)
 {
     observed_slots++;
-
+    
+    if(node_id == 0) cout << "Backoff stage: " << backoff_stage << endl;
+    
     // print backoff values (* for stations that are not backlogged)
     // and number of packets in the queue
     if (node_id == 0)
@@ -117,7 +122,7 @@ void STA :: in_slot(SLOT_notification &slot)
     }
 
     if (backlogged)
-    {
+    {     
         //printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
     }else
     {
@@ -140,26 +145,32 @@ void STA :: in_slot(SLOT_notification &slot)
             {
                 successful_transmissions++;
                 
+                
                 //Resetting transmission attempt because successful TX
                 txAttempt = 0;
+                
+                //stageStickiness keeps backoff stage until queue is empty if set to 1
+                if(stageStickiness == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
 
                 MAC_queue.DelFirstPacket();
-
-                backoff_stage = 0;
                 
-                if(stickyness == 0)
+                //After successful tx, the sta_st goes back to sys_st
+                station_stickiness = system_stickiness;
+                
+                if(station_stickiness == 0)
                 {
                     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);    
                 }else
-                { //just considering two values for stickyness {0,1}
-                    backoff_counter = CWMIN/2;
+                {  
+                    backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
                 }
                
                 if (MAC_queue.QueueSize() == 0)
                 {
                     backlogged = 0;
+                    backoff_stage = 0;
                 }else
                 {
                     packet = MAC_queue.GetFirstPacket();
@@ -169,8 +180,7 @@ void STA :: in_slot(SLOT_notification &slot)
             {
                 //Other stations transmit
                 //Decrement backoff_counter
-                backoff_counter--;
-                
+                backoff_counter--;           
             }
             
         }
@@ -181,22 +191,35 @@ void STA :: in_slot(SLOT_notification &slot)
             {
                 txAttempt++;
                 collisions++;
-                
-                
-                backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-
+                //One collision, one less counter stickiness
+                if(system_stickiness > 0){ 
+                    station_stickiness = std::max(0, station_stickiness-1);
+                    if(station_stickiness == 0)
+                    {
+                        backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+                        backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    }else //still sticky
+                    {
+                        backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
+                    }
+                }else
+                {
+                    backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
+                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                }
+                    
+                                                                  
                 if (txAttempt > MAX_RET)
                 {
                     txAttempt = 0;
-                    backoff_stage = 0;
+                    //after dropping a frame, the backoff_stage is also reset
+                    if(stageStickiness == 0) backoff_stage = 0;
                     backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
                     
                     //Grabbing a new packet and removing it from the queue
                     //The previous packet is discarded
                     packet = MAC_queue.GetFirstPacket();
                     MAC_queue.DelFirstPacket();
-                    
                 }
             }
             else
@@ -207,7 +230,6 @@ void STA :: in_slot(SLOT_notification &slot)
         }
 
     }
-
 
     //stations that are not backlogged will wait for a packet
     if (backlogged == 0)
@@ -223,8 +245,10 @@ void STA :: in_slot(SLOT_notification &slot)
     if (backoff_counter == 0)
     {
         total_transmissions++;
+        if(node_id == 0) cout << "TX in slot: " << observed_slots << endl;
         out_packet(packet);
     }
+    
 };
 
 void STA :: in_packet(Packet &packet)
