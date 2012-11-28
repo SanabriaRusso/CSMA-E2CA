@@ -26,6 +26,7 @@ component STA : public TypeII
         int station_stickiness;
         int stageStickiness;
         int fairShare;
+        int aggregation; //number of aggregated frames for transmission
 	
         long int observed_slots;
         long int empty_slots;
@@ -94,7 +95,8 @@ void STA :: Start()
 void STA :: Stop()
 {
     
-      
+    throughput = packet.L*8*(float)successful_transmissions / SimTime();
+    
 	cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
     cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
@@ -102,7 +104,7 @@ void STA :: Stop()
     cout << "Collisions:" << " " << collisions << endl;
     cout << "*** DETAILED ***" << endl;
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
-    cout << "Throughput of this station (Boris) = " << packet.L*8*(float)successful_transmissions / SimTime() << "bps" << endl;
+    cout << "Throughput of this station (Boris) = " << throughput << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
     cout << "Delay (queueing + service) = " << (float)txDelay / (float)non_blocked_packets << endl;
     cout << endl;
@@ -111,14 +113,10 @@ void STA :: Stop()
 void STA :: in_slot(SLOT_notification &slot)
 {
     observed_slots++;
-    
-    if(node_id == 0) cout << "Backoff stage: " << backoff_stage << endl;
-    
-    // print backoff values (* for stations that are not backlogged)
-    // and number of packets in the queue
+
     if (node_id == 0)
     {
-        //printf("\n");  
+        //test printf
     }
 
     if (backlogged)
@@ -143,7 +141,13 @@ void STA :: in_slot(SLOT_notification &slot)
         {             
             if (backoff_counter == 0) // I have transmitted
             {
-                successful_transmissions++;
+                if(fairShare > 0)
+                {
+                    successful_transmissions+=aggregation;
+                }else
+                {
+                    successful_transmissions++;
+                }
                 
                 
                 //Resetting transmission attempt because successful TX
@@ -198,6 +202,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
                         backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                        if(fairShare > 0) aggregation = pow(2,backoff_stage);
                     }else //still sticky
                     {
                         backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
@@ -214,8 +219,11 @@ void STA :: in_slot(SLOT_notification &slot)
                     txAttempt = 0;
                     //after dropping a frame, the backoff_stage is also reset
                     if(stageStickiness == 0) backoff_stage = 0;
-                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
+                    //after dropping a frame, the fairness must be retained
+                    if(fairShare == 0) aggregation = 1;
                     
+                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
+
                     //Grabbing a new packet and removing it from the queue
                     //The previous packet is discarded
                     packet = MAC_queue.GetFirstPacket();
@@ -244,8 +252,15 @@ void STA :: in_slot(SLOT_notification &slot)
     //transmit if backoff counter reaches zero
     if (backoff_counter == 0)
     {
-        total_transmissions++;
-        if(node_id == 0) cout << "TX in slot: " << observed_slots << endl;
+        //ask Jaume, because this measure has to do with TAU
+        //if(fairShare > 0)
+        //{
+        //    total_transmissions+=aggregation;
+        //}else
+        //{
+            total_transmissions++;
+        //}
+        packet.aggregation = aggregation;
         out_packet(packet);
     }
     

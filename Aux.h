@@ -8,6 +8,7 @@ struct Packet
 	int L;
 	int seq;
 	double send_time;
+	int aggregation; //used whenever fairShare is activated
 };
 
 struct SLOT_notification

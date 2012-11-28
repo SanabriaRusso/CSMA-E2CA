@@ -3,6 +3,7 @@
 #include <time.h>
 #include <math.h>
 #include <iostream>
+#include <fstream>
 
 //#include "/home/boris/RSoftware/sense31/code/common/cost.h"
 //#include "/home/boris/Dropbox/Boris/Research/Tools/SlottedCSMA/COST/cost.h"
@@ -51,6 +52,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 
 	// Channel	
 	channel.Nodes = NumNodes;
+	channel.fairShare = fairShare;
 	channel.out_slot.SetSize(NumNodes);
 
 	// Sat Nodes
@@ -63,6 +65,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].station_stickiness = 0;
 		stas[n].stageStickiness = stageStickiness;
 		stas[n].fairShare = fairShare;
+		stas[n].aggregation = 1;
 
 
 		// Traffic Source
@@ -102,10 +105,15 @@ void SlottedCSMA :: Stop()
 	double overall_successful_tx = 0;
 	double overall_collisions = 0;
 	double overall_empty = 0;
+	double total_slots = 0;
+	double overall_throughput = 0;
 	
 
 	float avg_tau = 0;
 	float std_tau = 0;
+	
+	double stas_throughput [Nodes];
+	double fairness_index = 0;
 
 	
 	for(int n=0;n<Nodes;n++)
@@ -121,6 +129,7 @@ void SlottedCSMA :: Stop()
 	overall_successful_tx = channel.succesful_slots;
 	overall_collisions = channel.collision_slots;
 	overall_empty = channel.empty_slots;
+	total_slots = channel.total_slots;
 	
 	
 	/*cout << "Success: " << overall_successful_tx << endl;
@@ -133,25 +142,40 @@ void SlottedCSMA :: Stop()
 	avg_tau = avg_tau/Nodes;
 	
 	//Computing the standard deviation of each of the station's tau
+	//Also capturing each station's throughput to build the Jain's index
 	for(int i=0; i<Nodes; i++)
 	{
 	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
+	    stas_throughput[i] = stas[i].throughput;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
+	
+	double fair_numerator, fair_denominator;
+	
+	fair_numerator = 0;
+	fair_denominator = 0;
+	
+	//computing the fairness_index
+	for(int k = 0; k < Nodes; k++)
+	{
+	    fair_numerator += stas_throughput[k];
+        fair_denominator += pow(stas_throughput[k],2);        
+	}
+	
+	fairness_index = (pow(fair_numerator,2)) / (Nodes*fair_denominator);
+	overall_throughput = stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_);
 
-	/*FILE *res;
-	res = fopen("Results/res.txt","at");
-	fprintf(res,"%d %d %f %d %d %f %f\n",SimId,Nodes,Bandwidth_,PacketLength_,Batch_,p_res,delay_res);
-	fclose(res);
-	printf("SimId Nodes Bandwidth per node Packet Length MaxBatch | Collision Prob | Total Delay\n");
-	printf("%d %d %f %d %d %f %f\n",SimId,Nodes,Bandwidth_,PacketLength_,Batch_,p_res,delay_res);*/
+	ofstream statistics;
+	statistics.open("Results/statistics.txt", ios::app);
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
 	cout << "Average TAU = " << avg_tau << endl;
 	cout << "Standard Deviation = " << (double)std_tau << endl;
-	cout << "Overall Throughput = " << stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_)<< endl;
+	cout << "Overall Throughput = " << overall_throughput << endl;
+	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	
 	
 
