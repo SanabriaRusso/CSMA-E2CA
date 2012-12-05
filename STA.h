@@ -35,14 +35,18 @@ component STA : public TypeII
         long int collisions;
         long int total_transmissions;
         long int successful_transmissions;
+        long int driftedSlots;
 
         long int incoming_packets;
         long int non_blocked_packets;
         long int blocked_packets;
 
         double txDelay;
-        
         double throughput;
+        double staDelay; //overall station's delay
+        
+        float slotDrift;
+        float driftProbability; //system slot drift probability
 
     private:
         int backoff_counter;
@@ -89,6 +93,10 @@ void STA :: Start()
     txDelay = 0;
     
     throughput = 0;
+    staDelay = 0;
+    
+    slotDrift = 0;
+    driftedSlots = 0;
 
 };
 
@@ -96,6 +104,7 @@ void STA :: Stop()
 {
     
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
+    staDelay = (float)txDelay / (float)non_blocked_packets;
     
 	cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
@@ -106,7 +115,7 @@ void STA :: Stop()
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
     cout << "Throughput of this station (Boris) = " << throughput << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
-    cout << "Delay (queueing + service) = " << (float)txDelay / (float)non_blocked_packets << endl;
+    cout << "Delay (queueing + service) = " << staDelay << endl;
     cout << endl;
 };
 
@@ -158,7 +167,26 @@ void STA :: in_slot(SLOT_notification &slot)
                 
                 txDelay += SimTime() - packet.send_time;
 
-                MAC_queue.DelFirstPacket();
+                //Deleting as many packets as the aggregation field in the packet structure
+                if(fairShare > 0)
+                {
+                    if(aggregation < MAC_queue.QueueSize())
+                    {
+                        for(int i = 0; i <= aggregation; i++)
+                        {
+                            MAC_queue.DelFirstPacket();
+                        }
+                    }else
+                    {
+                        for(int i = 0; i <= MAC_queue.QueueSize(); i++)
+                        {
+                            MAC_queue.DelFirstPacket();
+                        }
+                    }
+                }else
+                {
+                    MAC_queue.DelFirstPacket();
+                }
                 
                 //After successful tx, the sta_st goes back to sys_st
                 station_stickiness = system_stickiness;
@@ -188,6 +216,8 @@ void STA :: in_slot(SLOT_notification &slot)
             }
             
         }
+        
+        /*--------Collisions----------*/
         
         if (slot.status > 1)
         {   
@@ -227,7 +257,27 @@ void STA :: in_slot(SLOT_notification &slot)
                     //Grabbing a new packet and removing it from the queue
                     //The previous packet is discarded
                     packet = MAC_queue.GetFirstPacket();
-                    MAC_queue.DelFirstPacket();
+                    
+                    //Deleting as many packets as the aggregation field in the packet structure
+                    if(fairShare > 0)
+                    {
+                        if(aggregation < MAC_queue.QueueSize())
+                        {
+                            for(int i = 0; i <= aggregation; i++)
+                            {
+                                MAC_queue.DelFirstPacket();
+                            }
+                        }else
+                        {
+                            for(int i = 0; i <= MAC_queue.QueueSize(); i++)
+                            {
+                                MAC_queue.DelFirstPacket();
+                            }
+                        }
+                   }else
+                   {
+                        MAC_queue.DelFirstPacket();
+                   }
                 }
             }
             else
@@ -249,9 +299,31 @@ void STA :: in_slot(SLOT_notification &slot)
         }
         
     }
+    
+    if(driftProbability > 0)
+    {
+        if(backoff_counter == 2)
+        {
+            slotDrift = rand() % 100 + 1;
+            //if driftProbability = p, then with p/2 it will lead a slot and with p/2 it will lag a slot
+            if((slotDrift > 0) && (slotDrift <= driftProbability/2.))
+            {
+                backoff_counter--; //lags one slot
+                driftedSlots++;
+            }else if((slotDrift > driftProbability/2.) && (slotDrift <= driftProbability))
+            {
+                backoff_counter -= 2; //leads one slot
+                driftedSlots++;
+            }
+        }
+    }
+        
+    
+    
     //transmit if backoff counter reaches zero
     if (backoff_counter == 0)
     {
+       
         //ask Jaume, because this measure has to do with TAU
         //if(fairShare > 0)
         //{
@@ -260,7 +332,10 @@ void STA :: in_slot(SLOT_notification &slot)
         //{
             total_transmissions++;
         //}
-        packet.aggregation = aggregation;
+        if(fairShare > 0)
+        {
+            packet.aggregation = aggregation;
+        }
         out_packet(packet);
     }
     

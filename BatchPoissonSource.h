@@ -40,7 +40,7 @@ void BatchPoissonSource :: Setup()
 
 void BatchPoissonSource :: Start()
 {
-	packet_rate=bandwidth/L;
+	packet_rate=bandwidth/(L*8);
 	inter_packet_timer.Set(Exponential(1/packet_rate));
 	seq=0;
 };

@@ -23,7 +23,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift);
 		void Stop();
 		void Start();		
 
@@ -42,7 +42,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -54,6 +54,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 	channel.Nodes = NumNodes;
 	channel.fairShare = fairShare;
 	channel.out_slot.SetSize(NumNodes);
+	channel.error = channelErrors;
 
 	// Sat Nodes
 	for(int n=0;n<NumNodes;n++)
@@ -66,6 +67,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].stageStickiness = stageStickiness;
 		stas[n].fairShare = fairShare;
 		stas[n].aggregation = 1;
+		stas[n].driftProbability = slotDrift;
 
 
 		// Traffic Source
@@ -106,6 +108,8 @@ void SlottedCSMA :: Stop()
 	double overall_collisions = 0;
 	double overall_empty = 0;
 	double total_slots = 0;
+	double driftedSlots = 0;
+	double tx_slots = 0;
 	double overall_throughput = 0;
 	
 
@@ -114,13 +118,14 @@ void SlottedCSMA :: Stop()
 	
 	double stas_throughput [Nodes];
 	double fairness_index = 0;
+	double systemTXDelay = 0;
 
 	
 	for(int n=0;n<Nodes;n++)
 	{
 	    avg_tau += ((float)stas[n].total_transmissions / (float)stas[n].observed_slots);
-	    overall_successful_tx += stas[n].successful_transmissions;
-	    overall_collisions += stas[n].collisions;
+	    driftedSlots += stas[n].driftedSlots;
+	    tx_slots += stas[n].total_transmissions;
 	    
 		//p_res+=(stas[n].collisions / stas[n].total_transmissions);
 		//delay_res+=(stas[n].delay / stas[n].non_blocked_packets);
@@ -130,6 +135,7 @@ void SlottedCSMA :: Stop()
 	overall_collisions = channel.collision_slots;
 	overall_empty = channel.empty_slots;
 	total_slots = channel.total_slots;
+	driftedSlots /= tx_slots;
 	
 	
 	/*cout << "Success: " << overall_successful_tx << endl;
@@ -143,13 +149,16 @@ void SlottedCSMA :: Stop()
 	
 	//Computing the standard deviation of each of the station's tau
 	//Also capturing each station's throughput to build the Jain's index
+	//And the delay of each station to derive a system average txDalay delay
 	for(int i=0; i<Nodes; i++)
 	{
 	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
+	    systemTXDelay += stas[i].staDelay;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
+	systemTXDelay /= Nodes;
 	
 	double fair_numerator, fair_denominator;
 	
@@ -168,7 +177,7 @@ void SlottedCSMA :: Stop()
 
 	ofstream statistics;
 	statistics.open("Results/statistics.txt", ios::app);
-	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index << endl;
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -176,6 +185,8 @@ void SlottedCSMA :: Stop()
 	cout << "Standard Deviation = " << (double)std_tau << endl;
 	cout << "Overall Throughput = " << overall_throughput << endl;
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
+	cout << "Overall average system TX delay = " << systemTXDelay << endl;
+	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl;
 	
 	
 
@@ -187,23 +198,21 @@ int main(int argc, char *argv[])
 {
 	if(argc < 2) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare channelErrors slotDrift\n");
 		return 0;
 	}
 	
-	int Stickiness;
-	int stageStickiness; //keep the current BO stage, until queue's empty
-	int fairShare;
-
 	int MaxSimIter = 1;
 	double SimTime = atof(argv[1]);
 	int NumNodes = atoi(argv[2]);
 	int PacketLength = atoi(argv[3]);
 	double Bandwidth = atof(argv[4]);
 	int Batch = atoi(argv[5]);
-	Stickiness = atoi(argv[6]);
-	stageStickiness = atoi(argv[7]);
-	fairShare = atoi(argv[8]);
+	int Stickiness = atoi(argv[6]);
+	int stageStickiness = atoi(argv[7]); //keep the current BO stage, until queue's empty
+	int fairShare = atoi(argv[8]);
+	int channelErrors = atof(argv[9]);
+	int slotDrift = atof(argv[10]);
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
@@ -213,7 +222,7 @@ int main(int argc, char *argv[])
 	test.Seed=(long int)6*rand();
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare, channelErrors, slotDrift);
 	
 	test.Run();
 
