@@ -26,7 +26,6 @@ component STA : public TypeII
         int station_stickiness;
         int stageStickiness;
         int fairShare;
-        int aggregation; //number of aggregated frames for transmission
 	
         long int observed_slots;
         long int empty_slots;
@@ -150,43 +149,18 @@ void STA :: in_slot(SLOT_notification &slot)
         {             
             if (backoff_counter == 0) // I have transmitted
             {
-                if(fairShare > 0)
-                {
-                    successful_transmissions+=aggregation;
-                }else
-                {
-                    successful_transmissions++;
-                }
-                
-                
-                //Resetting transmission attempt because successful TX
+                //Sent as many packets as was set in the past packet's structure
+                successful_transmissions+=(int)pow(2,backoff_stage);
+
                 txAttempt = 0;
                 
-                //stageStickiness keeps backoff stage until queue is empty if set to 1
                 if(stageStickiness == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
 
-                //Deleting as many packets as the aggregation field in the packet structure
-                if(fairShare > 0)
-                {
-                    //ATTENTION: the sim crashes if aggregation = Queue size
-                    //Fix: aggregation should be at most Queue size -1
-                    if(aggregation < MAC_queue.QueueSize())
-                    {
-                        for(int i = 0; i <= aggregation; i++)
-                        {
-                            MAC_queue.DelFirstPacket();
-                        }
-                    }else
-                    {
-                        int qSize = MAC_queue.QueueSize();
-                        for(int i = 0; i < qSize; i++)
-                        {
-                            MAC_queue.DelFirstPacket();
-                        }
-                    }
-                }else
+                //Deleting as many packets as the aggregation field in the sent packet structure
+                int qSize = MAC_queue.QueueSize();
+                for(int i = 0; i <= std::min(packet.aggregation, qSize -1); i++)
                 {
                     MAC_queue.DelFirstPacket();
                 }
@@ -206,26 +180,9 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     backlogged = 0;
                     backoff_stage = 0;
-                    //Ensures an increased JFI
-                    if(fairShare > 0) aggregation = 1;
                 }else
                 {
-                    if(fairShare > 0)
-                    {
-                        //If there're enough packets in Q
-                        if(aggregation < MAC_queue.QueueSize())
-                        {
-                            packet = MAC_queue.GetFirstPacket();
-                        }else //If aggregation is greater than the number of packets in Q
-                        {
-                            //modify the aggregation field to be the size of the Q-1?
-                            aggregation = MAC_queue.QueueSize() - 1;
-                            packet = MAC_queue.GetFirstPacket();
-                        }
-                    }else
-                    {
-                        packet = MAC_queue.GetFirstPacket();
-                    }
+                    packet = MAC_queue.GetFirstPacket();
                 }
             }
             else
@@ -252,16 +209,6 @@ void STA :: in_slot(SLOT_notification &slot)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
                         backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-                        if(fairShare > 0)
-                        {//Making sure there're enough packets in the Q
-                            if(pow(2,backoff_stage) < MAC_queue.QueueSize())
-                            {
-                                aggregation = pow(2,backoff_stage);
-                            }else
-                            {
-                                aggregation = MAC_queue.QueueSize() - 1;
-                            }
-                        }
                     }else //still sticky
                     {
                         backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
@@ -276,41 +223,20 @@ void STA :: in_slot(SLOT_notification &slot)
                 if (txAttempt > MAX_RET)
                 {
                     txAttempt = 0;
-                    //after dropping a frame, the backoff_stage is also reset
+                    //after dropping a frame in DCF, the backoff_stage is reset
                     if(stageStickiness == 0) backoff_stage = 0;
-                    //after dropping a frame, the fairness must be retained if fairShare > 0 or reset otherwise
-                    if(!(fairShare > 0)) aggregation = 1;
                     
-                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
-
-                    //Grabbing a new packet and removing it from the queue
-                    //The previous packet is discarded
-                    
-                    
-                    //Deleting as many packets as the aggregation field in the packet structure
-                    if(fairShare > 0)
+                    //Removing the number of packets as in the aggregation structure of the
+                    //discarded packet, then grabbing a new one
+                    int qSize = MAC_queue.QueueSize();
+                    for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
                     {
-                        if(aggregation < MAC_queue.QueueSize())
-                        {
-                            packet = MAC_queue.GetFirstPacket();
-                            for(int i = 0; i <= aggregation; i++)
-                            {
-                                MAC_queue.DelFirstPacket();
-                            }
-                        }else
-                        {
-                            aggregation = MAC_queue.QueueSize() - 1;
-                            packet = MAC_queue.GetFirstPacket();
-                            for(int i = 0; i <= aggregation; i++)
-                            {
-                                MAC_queue.DelFirstPacket();
-                            }
-                        }
-                   }else
-                   {
-                        packet = MAC_queue.GetFirstPacket();
                         MAC_queue.DelFirstPacket();
-                   }
+                    }
+                    packet = MAC_queue.GetFirstPacket();
+                    
+                    //Setting the new backoff_counter
+                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
                 }
             }
             else
@@ -356,19 +282,8 @@ void STA :: in_slot(SLOT_notification &slot)
     //transmit if backoff counter reaches zero
     if (backoff_counter == 0)
     {
-       
-        //ask Jaume, because this measure has to do with TAU
-        //if(fairShare > 0)
-        //{
-        //    total_transmissions+=aggregation;
-        //}else
-        //{
-            total_transmissions++;
-        //}
-        if(fairShare > 0)
-        {
-            packet.aggregation = aggregation;
-        }
+        total_transmissions++;
+        packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
         out_packet(packet);
     }
     

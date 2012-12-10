@@ -66,7 +66,6 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].station_stickiness = 0;
 		stas[n].stageStickiness = stageStickiness;
 		stas[n].fairShare = fairShare;
-		stas[n].aggregation = 1;
 		stas[n].driftProbability = slotDrift;
 
 
@@ -74,6 +73,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		sources[n].bandwidth = Bandwidth;
 		sources[n].L = PacketLength;
 		sources[n].MaxBatch = Batch;
+		sources[n].aggregation = 1;
 
 	}
 	
@@ -196,7 +196,7 @@ void SlottedCSMA :: Stop()
 
 int main(int argc, char *argv[])
 {
-	if(argc < 2) 
+	if(argc < 11) 
 	{
 		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare channelErrors slotDrift\n");
 		return 0;
