@@ -170,6 +170,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Deleting as many packets as the aggregation field in the packet structure
                 if(fairShare > 0)
                 {
+                    //ATTENTION: the sim crashes if aggregation = Queue size
+                    //Fix: aggregation should be at most Queue size -1
                     if(aggregation < MAC_queue.QueueSize())
                     {
                         for(int i = 0; i <= aggregation; i++)
@@ -178,7 +180,8 @@ void STA :: in_slot(SLOT_notification &slot)
                         }
                     }else
                     {
-                        for(int i = 0; i <= MAC_queue.QueueSize(); i++)
+                        int qSize = MAC_queue.QueueSize();
+                        for(int i = 0; i < qSize; i++)
                         {
                             MAC_queue.DelFirstPacket();
                         }
@@ -203,9 +206,26 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     backlogged = 0;
                     backoff_stage = 0;
+                    //Ensures an increased JFI
+                    if(fairShare > 0) aggregation = 1;
                 }else
                 {
-                    packet = MAC_queue.GetFirstPacket();
+                    if(fairShare > 0)
+                    {
+                        //If there're enough packets in Q
+                        if(aggregation < MAC_queue.QueueSize())
+                        {
+                            packet = MAC_queue.GetFirstPacket();
+                        }else //If aggregation is greater than the number of packets in Q
+                        {
+                            //modify the aggregation field to be the size of the Q-1?
+                            aggregation = MAC_queue.QueueSize() - 1;
+                            packet = MAC_queue.GetFirstPacket();
+                        }
+                    }else
+                    {
+                        packet = MAC_queue.GetFirstPacket();
+                    }
                 }
             }
             else
@@ -232,7 +252,16 @@ void STA :: in_slot(SLOT_notification &slot)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
                         backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-                        if(fairShare > 0) aggregation = pow(2,backoff_stage);
+                        if(fairShare > 0)
+                        {//Making sure there're enough packets in the Q
+                            if(pow(2,backoff_stage) < MAC_queue.QueueSize())
+                            {
+                                aggregation = pow(2,backoff_stage);
+                            }else
+                            {
+                                aggregation = MAC_queue.QueueSize() - 1;
+                            }
+                        }
                     }else //still sticky
                     {
                         backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
@@ -249,33 +278,37 @@ void STA :: in_slot(SLOT_notification &slot)
                     txAttempt = 0;
                     //after dropping a frame, the backoff_stage is also reset
                     if(stageStickiness == 0) backoff_stage = 0;
-                    //after dropping a frame, the fairness must be retained
-                    if(fairShare == 0) aggregation = 1;
+                    //after dropping a frame, the fairness must be retained if fairShare > 0 or reset otherwise
+                    if(!(fairShare > 0)) aggregation = 1;
                     
                     backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
 
                     //Grabbing a new packet and removing it from the queue
                     //The previous packet is discarded
-                    packet = MAC_queue.GetFirstPacket();
+                    
                     
                     //Deleting as many packets as the aggregation field in the packet structure
                     if(fairShare > 0)
                     {
                         if(aggregation < MAC_queue.QueueSize())
                         {
+                            packet = MAC_queue.GetFirstPacket();
                             for(int i = 0; i <= aggregation; i++)
                             {
                                 MAC_queue.DelFirstPacket();
                             }
                         }else
                         {
-                            for(int i = 0; i <= MAC_queue.QueueSize(); i++)
+                            aggregation = MAC_queue.QueueSize() - 1;
+                            packet = MAC_queue.GetFirstPacket();
+                            for(int i = 0; i <= aggregation; i++)
                             {
                                 MAC_queue.DelFirstPacket();
                             }
                         }
                    }else
                    {
+                        packet = MAC_queue.GetFirstPacket();
                         MAC_queue.DelFirstPacket();
                    }
                 }
