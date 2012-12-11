@@ -115,33 +115,18 @@ void Channel :: EndReceptionTime(trigger_t &)
 	if(number_of_transmissions_in_current_slot == 1)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
-		if(fairShare > 0)
-		{
-		    succesful_slots += aggregation;
-		}else
-		{
-		    succesful_slots++;
-		}
+
+		succesful_slots += aggregation;
+		
 	}
 	if(number_of_transmissions_in_current_slot > 1)
 	{
 		slot_time.Set(SimTime()+collision_duration);
-		if(fairShare > 0)
-		{
-		    collision_slots += aggregation;
-		}else
-		{
-		    collision_slots++;
-		}	
+		
+		collision_slots += aggregation;	
 	}
 
-	if(fairShare > 0)
-	{
-	    total_slots+=aggregation;
-	}else
-	{
-	    total_slots++;
-	}
+	total_slots+=aggregation;
 }
 
 
@@ -165,15 +150,8 @@ void Channel :: in_packet(Packet &packet)
 	}
 	
 	//printf("Channel: %d\n",number_of_transmissions_in_current_slot);
-
-	if(fairShare > 0)
-	{
-	    succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
-	    collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);
-	}else
-	{
-	    succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
-	    collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);
-	}
+	
+	succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
+	collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);
 }
 

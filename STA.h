@@ -124,7 +124,7 @@ void STA :: in_slot(SLOT_notification &slot)
 
     if (node_id == 0)
     {
-        //test printf
+        //
     }
 
     if (backlogged)
@@ -150,7 +150,16 @@ void STA :: in_slot(SLOT_notification &slot)
             if (backoff_counter == 0) // I have transmitted
             {
                 //Sent as many packets as was set in the past packet's structure
-                successful_transmissions+=(int)pow(2,backoff_stage);
+                if(fairShare > 0)
+                {
+                    successful_transmissions+=(int)pow(2,backoff_stage);
+                }else
+                {
+                    successful_transmissions++;
+                    
+                }
+                
+                if(node_id == 0) cout << successful_transmissions << endl;
 
                 txAttempt = 0;
                 
@@ -228,8 +237,14 @@ void STA :: in_slot(SLOT_notification &slot)
                     
                     //Removing the number of packets as in the aggregation structure of the
                     //discarded packet, then grabbing a new one
-                    int qSize = MAC_queue.QueueSize();
-                    for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
+                    if(fairShare > 0)
+                    {
+                        int qSize = MAC_queue.QueueSize();
+                        for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
+                        {
+                            MAC_queue.DelFirstPacket();
+                        }
+                    }else
                     {
                         MAC_queue.DelFirstPacket();
                     }
@@ -283,7 +298,10 @@ void STA :: in_slot(SLOT_notification &slot)
     if (backoff_counter == 0)
     {
         total_transmissions++;
-        packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+        if(fairShare > 0)
+        {
+            packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+        }
         out_packet(packet);
     }
     
