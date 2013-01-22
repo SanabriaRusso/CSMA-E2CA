@@ -164,6 +164,11 @@ void STA :: in_slot(SLOT_notification &slot)
                 if(stageStickiness == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
+                
+                /*if(node_id == 0)
+                {
+                    cout << "Picket at: " << packet.send_time << " sent: " << SimTime() - packet.send_time << " segs later." << endl;
+                }*/
 
                 //Deleting as many packets as the aggregation field in the sent packet structure
                 int qSize = MAC_queue.QueueSize();
@@ -190,6 +195,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 }else
                 {
                     packet = MAC_queue.GetFirstPacket();
+                    packet.send_time = SimTime();
                 }
             }
             else
@@ -247,6 +253,7 @@ void STA :: in_slot(SLOT_notification &slot)
                         MAC_queue.DelFirstPacket();
                     }
                     packet = MAC_queue.GetFirstPacket();
+                    packet.send_time = SimTime();
                     
                     //Setting the new backoff_counter
                     backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
@@ -268,6 +275,7 @@ void STA :: in_slot(SLOT_notification &slot)
         {
             backlogged = 1;
             packet = MAC_queue.GetFirstPacket();
+            packet.send_time = SimTime();
         }
         
     }
