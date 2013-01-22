@@ -187,6 +187,8 @@ void SlottedCSMA :: Stop()
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	cout << "Overall average system TX delay = " << systemTXDelay << endl;
 	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl << endl;
+	
+	
 	cout << "***Debugg***" << endl;
 	cout << "Sx Slots: " << overall_successful_tx << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;

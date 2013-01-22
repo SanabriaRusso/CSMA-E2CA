@@ -104,6 +104,7 @@ void STA :: Stop()
 {
     
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
+    
     staDelay = (float)txDelay / (float)non_blocked_packets;
     
 	cout << endl;
@@ -164,12 +165,9 @@ void STA :: in_slot(SLOT_notification &slot)
                 if(stageStickiness == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
-                
-                /*if(node_id == 0)
-                {
-                    cout << "Picket at: " << packet.send_time << " sent: " << SimTime() - packet.send_time << " segs later." << endl;
-                }*/
 
+                //if(node_id == 0) cout << "Picket at: " << packet.send_time << ", sent at: " << SimTime() << ", with a delay of: " << SimTime() - packet.send_time << endl; 
+                
                 //Deleting as many packets as the aggregation field in the sent packet structure
                 int qSize = MAC_queue.QueueSize();
                 for(int i = 0; i <= std::min(packet.aggregation, qSize -1); i++)

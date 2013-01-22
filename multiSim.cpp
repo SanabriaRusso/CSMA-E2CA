@@ -30,7 +30,7 @@ int main()
     float drift = 0.0;
     
     //For the statistics file
-    int statsLength = 0;
+    //int statsLength = 0;
     nodesAverage *meanCarrier;
     
 
@@ -77,7 +77,7 @@ int main()
     string line;
     meanCarrier = new nodesAverage[N];
     
-    statsLength = lengthOfFile(&fin);    
+    //statsLength = lengthOfFile(&fin);    
     
     //cout << statsLength << endl;	
     
@@ -145,37 +145,42 @@ int main()
     		double numerator2 = 0;
     		double numeratorJFI = 0;
     		double numeratorDelay = 0;
+    		double numeratorSTDelay = 0;
     		double average = 0;
     		double stDeviation = 0.0;
+    		double stDeviationDelay = 0.0;
     		double avgJFI = 0;
     		double avgDelay = 0;
     		
+    		
+    		//Computing the averages
     		for(int i = 0; i <= iterator; i++)
     		{
     			numerator += meanCarrier[i].rate;
+    			numeratorJFI += (meanCarrier[i].JFI);
+    			numeratorDelay += (meanCarrier[i].delay);
     		}
     		average = numerator/iterator;
-    		
-    		//cout << "***Average*** = " << average << endl;
+    		avgJFI = numeratorJFI/iterator;
+    		avgDelay = numeratorDelay/iterator;
     		
     		//Computing the standard deviation for the error bars
-    		//Also grabbing JFI and delay to average
+    		//by calculating the STD
     		for(int j = 0; j <= iterator; j++)
     		{	
     			if(meanCarrier[j].rate > 0)
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
-    				numeratorJFI += (meanCarrier[j].JFI);
-    				numeratorDelay += (meanCarrier[j].delay);
+    				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
     			}
     		}
     		
     		stDeviation = sqrt((1./(iterator))*numerator2);
-    		avgJFI = numeratorJFI/iterator;
-    		avgDelay = numeratorDelay/iterator;
+    		stDeviationDelay = sqrt((1./(iterator))*numeratorSTDelay);
+    		
 
     		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << avgDelay << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << endl;
     		iterator = 0;
     		
     	}
