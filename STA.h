@@ -1,5 +1,6 @@
 #include <math.h>
 #include <iostream>
+#include <fstream>
 #include "Aux.h"
 #include "FIFO.h"
 
@@ -156,10 +157,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 }else
                 {
                     successful_transmissions++;
-                    
                 }
-                
-                if(node_id == 0) cout << successful_transmissions << endl;
 
                 txAttempt = 0;
                 
@@ -301,6 +299,9 @@ void STA :: in_slot(SLOT_notification &slot)
         if(fairShare > 0)
         {
             packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+        }else
+        {
+            packet.aggregation = 1;
         }
         out_packet(packet);
     }

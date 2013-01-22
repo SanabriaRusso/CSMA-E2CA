@@ -23,7 +23,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift, int simSeed);
 		void Stop();
 		void Start();		
 
@@ -42,7 +42,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift, int simSeed)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -73,7 +73,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		sources[n].bandwidth = Bandwidth;
 		sources[n].L = PacketLength;
 		sources[n].MaxBatch = Batch;
-		sources[n].aggregation = 1;
+		sources[n].aggregation = fairShare;
 
 	}
 	
@@ -176,7 +176,7 @@ void SlottedCSMA :: Stop()
 	overall_throughput = stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_);
 
 	ofstream statistics;
-	statistics.open("Results/statistics.txt", ios::app);
+	statistics.open("Results/multiSim.txt", ios::app);
 	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << endl;
 	
 	cout << endl << endl;
@@ -186,7 +186,19 @@ void SlottedCSMA :: Stop()
 	cout << "Overall Throughput = " << overall_throughput << endl;
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	cout << "Overall average system TX delay = " << systemTXDelay << endl;
-	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl;
+	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl << endl;
+	cout << "***Debugg***" << endl;
+	cout << "Sx Slots: " << overall_successful_tx << endl;
+	cout << "Collision Slots: " << overall_collisions << endl;
+	cout << "Empty Slots: " << overall_empty << endl;
+	cout << "Total Slots: " << total_slots << endl;
+	if(total_slots != (overall_successful_tx+overall_collisions+overall_empty))
+	{
+	    cout << "They differ by: " << fabs(total_slots - (overall_successful_tx+overall_collisions+overall_empty)) << endl;    
+	}else
+	{
+	    cout << "They are equal" << endl;
+	}
 	
 	
 
@@ -198,7 +210,7 @@ int main(int argc, char *argv[])
 {
 	if(argc < 11) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare channelErrors slotDrift\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare channelErrors slotDrift simSeed\n");
 		return 0;
 	}
 	
@@ -207,22 +219,26 @@ int main(int argc, char *argv[])
 	int NumNodes = atoi(argv[2]);
 	int PacketLength = atoi(argv[3]);
 	double Bandwidth = atof(argv[4]);
-	int Batch = atoi(argv[5]);
-	int Stickiness = atoi(argv[6]);
+	int Batch = atoi(argv[5]); // =1
+	int Stickiness = atoi(argv[6]); // 0 = DCF, up to 2.
 	int stageStickiness = atoi(argv[7]); //keep the current BO stage, until queue's empty
-	int fairShare = atoi(argv[8]);
-	int channelErrors = atof(argv[9]);
-	int slotDrift = atof(argv[10]);
+	int fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
+	int channelErrors = atof(argv[9]); // float 0-1
+	int slotDrift = atof(argv[10]); // // float 0-1
+	int simSeed = atof(argv[11]); //Simulation seed
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
 		
 	SlottedCSMA test;
 
-	test.Seed=(long int)6*rand();
+	//test.Seed=(long int)6*rand();
+	
+	test.Seed = simSeed;
+		
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare, channelErrors, slotDrift);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare, channelErrors, slotDrift, simSeed);
 	
 	test.Run();
 

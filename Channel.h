@@ -115,14 +115,12 @@ void Channel :: EndReceptionTime(trigger_t &)
 	if(number_of_transmissions_in_current_slot == 1)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
-
 		succesful_slots += aggregation;
 		
 	}
 	if(number_of_transmissions_in_current_slot > 1)
 	{
 		slot_time.Set(SimTime()+collision_duration);
-		
 		collision_slots += aggregation;	
 	}
 
