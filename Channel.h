@@ -47,6 +47,8 @@ component Channel : public TypeII
 		int MAC_H, PCLP_PREAMBLE, PCLP_HEADER;
 		int aggregation;
 		float errorProbability;
+		//gathering statistics about the collision's evolution in time
+     	ofstream collisionsInTime;
 
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
@@ -77,7 +79,9 @@ void Channel :: Start()
 	aggregation = 0;
 	errorProbability = 0;
 
-	slot_time.Set(SimTime()); // Let's go!		
+	slot_time.Set(SimTime()); // Let's go!	
+	
+	collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
 
 };
 
@@ -86,6 +90,8 @@ void Channel :: Stop()
 	printf("\n\n");
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
+	
+	//collisionsInTime.close();
 };
 
 void Channel :: NewSlot(trigger_t &)
@@ -125,6 +131,18 @@ void Channel :: EndReceptionTime(trigger_t &)
 	}
 
 	total_slots+=aggregation;
+	
+	//Statistics for the evolution of Cp
+	if(total_slots) 
+	{
+	    collisionsInTime << SimTime() << " " << collision_slots/total_slots << endl;
+	}
+	else
+	{
+	    collisionsInTime << SimTime() << " 0" << endl;
+	}
+	
+	
 }
 
 
