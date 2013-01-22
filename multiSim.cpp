@@ -12,6 +12,8 @@ struct nodesAverage{
 	double rate;
 	double cp;
 	float JFI;
+	double bandwidth;
+	double delay;
 };
 
 int main()
@@ -120,6 +122,21 @@ int main()
     		jainsIndex >> jfi;
 	    	//cout << jfi << endl;
     		meanCarrier[iterator].JFI = jfi;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream bandwidth(token);
+	    	double bw;
+    		bandwidth >> bw;
+	    	//cout << bw << endl;
+    		meanCarrier[iterator].bandwidth = bw;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream delay(token);
+	    	double sysDelay;
+    		delay >> sysDelay;
+	    	//cout << sysDelay << endl;
+    		meanCarrier[iterator].delay = sysDelay;   		
+    		
     	
     		iterator++;
     	}else
@@ -127,9 +144,12 @@ int main()
     		double numerator = 0;
     		double numerator2 = 0;
     		double numeratorJFI = 0;
+    		double numeratorDelay = 0;
     		double average = 0;
     		double stDeviation = 0.0;
     		double avgJFI = 0;
+    		double avgDelay = 0;
+    		
     		for(int i = 0; i <= iterator; i++)
     		{
     			numerator += meanCarrier[i].rate;
@@ -139,27 +159,27 @@ int main()
     		//cout << "***Average*** = " << average << endl;
     		
     		//Computing the standard deviation for the error bars
-    		//Also grabbing JFI to average
+    		//Also grabbing JFI and delay to average
     		for(int j = 0; j <= iterator; j++)
     		{	
     			if(meanCarrier[j].rate > 0)
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
     				numeratorJFI += (meanCarrier[j].JFI);
+    				numeratorDelay += (meanCarrier[j].delay);
     			}
     		}
     		
     		stDeviation = sqrt((1./(iterator))*numerator2);
     		avgJFI = numeratorJFI/iterator;
-    		
-    		//cout << stDeviation << endl;
+    		avgDelay = numeratorDelay/iterator;
 
     		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << avgDelay << endl;
     		iterator = 0;
     		
     	}
-    }
+    }//for the while statement
     
     multiAverage.close();
     	
