@@ -167,7 +167,11 @@ void SlottedCSMA :: Stop()
 	}
 	
 	fairness_index = (pow(fair_numerator,2)) / (Nodes*fair_denominator);
-	overall_throughput = stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_);
+	
+	//802.11n version
+	overall_throughput = (channel.totalBitsSent)/SimTime();
+	
+	//overall_throughput = stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_);
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
@@ -196,6 +200,7 @@ void SlottedCSMA :: Stop()
 	    cout << "They are equal" << endl;
 	}
 	
+	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << " equals = " << (channel.totalBitsSent)/SimTime() << endl;
 	
 
 };

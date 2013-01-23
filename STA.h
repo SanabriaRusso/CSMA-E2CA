@@ -4,7 +4,7 @@
 #include "Aux.h"
 #include "FIFO.h"
 
-#define CWMIN 32
+#define CWMIN 16 //to comply with 802.11n. Was 32.
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1

@@ -5,10 +5,18 @@
 #define DATARATE 11E6 // Data Transmission Rate
 #define PHYRATE 1E6
 
+/*
 #define SLOT 20E-6 // Empty Slot
 #define DIFS 50E-6
 #define SIFS 10E-6
-#define L_ack 112
+#define L_ack 112*/
+
+//Complying with 802.11n
+#define SLOT 16e-06
+#define DIFS 34e-06
+#define SIFS 9e-06
+#define LDBPS 256
+#define TSYM 4e-06
 			
 #include "Aux.h"
 
@@ -46,15 +54,19 @@ component Channel : public TypeII
 	private:
 		int number_of_transmissions_in_current_slot;
 		double succ_tx_duration, collision_duration; // Depends on the packet(s) size(s)
+		double empty_slot_duration;
 		double L_max;
+		double TBack;
 		int MAC_H, PCLP_PREAMBLE, PCLP_HEADER;
 		int aggregation;
 		float errorProbability;
+		
 		//gathering statistics about the collision's evolution in time
      	ofstream collisionsInTime;
 
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
+		double totalBitsSent;
 		long long int test;
 };
 
@@ -68,6 +80,7 @@ void Channel :: Start()
 	number_of_transmissions_in_current_slot = 0;
 	succ_tx_duration = 10E-3;
 	collision_duration = 10E-3;
+	empty_slot_duration = 9e-06;
 
 	collision_slots = 0;
 	empty_slots = 0;
@@ -80,6 +93,9 @@ void Channel :: Start()
 	MAC_H = 272;
 	PCLP_PREAMBLE = 144; 
 	PCLP_HEADER = 48;
+	
+	TBack = 32e-06 + ceil((16 + 256 + 6)/LDBPS) * TSYM;
+	totalBitsSent = 0;
 
 	aggregation = 0;
 	errorProbability = 0;
@@ -87,7 +103,7 @@ void Channel :: Start()
 	slot_time.Set(SimTime()); // Let's go!
     cpSampler.Set(SimTime() + 1); //To sample CP 1 segs after the start of the simulator	
 	
-	collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
+	//collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
 
 };
 
@@ -97,7 +113,7 @@ void Channel :: Stop()
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
 	
-	collisionsInTime.close();
+	//collisionsInTime.close();
 };
 
 void Channel :: Sampler(trigger_t &)
@@ -146,6 +162,7 @@ void Channel :: EndReceptionTime(trigger_t &)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
 		succesful_slots ++;
+		totalBitsSent += (16 + aggregation*(32+(L_max*8)+288) + 6);
 		
 	}
 	if(number_of_transmissions_in_current_slot > 1)
@@ -154,13 +171,16 @@ void Channel :: EndReceptionTime(trigger_t &)
 		collision_slots ++;	
 	}
 
+	
 	total_slots++;
-	test++;
+	
+	//Used to plot slots vs. collision probability
+	/*test++;
 	
     if((test % 1000 == 0) && (test < 10001))
 	{
 	        collisionsInTime << test << " " << collision_slots/total_slots << endl;
-	}
+	}*/
 	
 }
 
@@ -184,9 +204,12 @@ void Channel :: in_packet(Packet &packet)
 	    number_of_transmissions_in_current_slot++;
 	}
 	
-	//printf("Channel: %d\n",number_of_transmissions_in_current_slot);
+	succ_tx_duration = 32e-06 + ceil((16 + aggregation*(32+(L_max*8)+288) + 6)/LDBPS)*TSYM + SIFS + TBack + DIFS + empty_slot_duration;
+	collision_duration = succ_tx_duration;
 	
-	succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
-	collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);
+	/*succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;
+	collision_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + DIFS + ((144 + 48 + 112)/PHYRATE);*/
+	
+	
 }
 
