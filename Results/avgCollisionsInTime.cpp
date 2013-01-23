@@ -53,8 +53,9 @@ int main()
     }
     
 
-    //10 is the number of seconds of the simulation
-    container average [10] = {};
+    //sims is the number of seconds of the simulation
+    int sims = 100;
+    container average [sims] = {};
     int newTime = 0;
     int traveller = 0;
 
@@ -83,7 +84,7 @@ int main()
     averageCollisionsInTime.open("averageCollisionsInTime.txt", ios::app);
     
     //Arranging the average array
-    for(int k = 0; k < 10; k++)
+    for(int k = 0; k < sims; k++)
     {
         cout << readings[k].readings << endl;
         (average[k].cp) = (average[k].cp)/(readings[k].readings);
@@ -109,7 +110,7 @@ int main()
     }
     
     //output to file
-    for(int m = 0; m < 10; m++)
+    for(int m = 0; m < sims; m++)
     {
         averageCollisionsInTime << average[m].time << " " << average[m].cp << " " << average[m].stdCP << endl;
     }
