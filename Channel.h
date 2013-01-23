@@ -131,6 +131,7 @@ void Channel :: NewSlot(trigger_t &)
 
 void Channel :: EndReceptionTime(trigger_t &)
 {
+    //Slots are different than frames. We can transmit multiple frames in one long slot through aggregation
 	
 	if(number_of_transmissions_in_current_slot==0) 
 	{
@@ -140,16 +141,16 @@ void Channel :: EndReceptionTime(trigger_t &)
 	if(number_of_transmissions_in_current_slot == 1)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
-		succesful_slots += aggregation;
+		succesful_slots ++;
 		
 	}
 	if(number_of_transmissions_in_current_slot > 1)
 	{
 		slot_time.Set(SimTime()+collision_duration);
-		collision_slots += aggregation;	
+		collision_slots ++;	
 	}
 
-	total_slots+=aggregation;
+	total_slots++;
 }
 
 

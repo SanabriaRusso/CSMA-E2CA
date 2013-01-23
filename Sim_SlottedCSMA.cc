@@ -108,6 +108,7 @@ void SlottedCSMA :: Stop()
 	double overall_collisions = 0;
 	double overall_empty = 0;
 	double total_slots = 0;
+	double overall_successful_tx_slots = 0;
 	double driftedSlots = 0;
 	double tx_slots = 0;
 	double overall_throughput = 0;
@@ -127,21 +128,14 @@ void SlottedCSMA :: Stop()
 	    driftedSlots += stas[n].driftedSlots;
 	    tx_slots += stas[n].total_transmissions;
 	    
-		//p_res+=(stas[n].collisions / stas[n].total_transmissions);
-		//delay_res+=(stas[n].delay / stas[n].non_blocked_packets);
-		
+	    overall_successful_tx+=stas[n].successful_transmissions;	
 	}
-	overall_successful_tx = channel.succesful_slots;
 	overall_collisions = channel.collision_slots;
 	overall_empty = channel.empty_slots;
 	total_slots = channel.total_slots;
+	overall_successful_tx_slots = channel.succesful_slots;
 	driftedSlots /= tx_slots;
-	
-	
-	/*cout << "Success: " << overall_successful_tx << endl;
-	cout << "Collisions: " << overall_collisions << endl;
-	cout << "Empty: " << overall_empty << endl;*/
-	
+
 	p_res = p_res/Nodes;
 	delay_res = delay_res/Nodes;
 	
@@ -190,13 +184,13 @@ void SlottedCSMA :: Stop()
 	
 	
 	cout << "***Debugg***" << endl;
-	cout << "Sx Slots: " << overall_successful_tx << endl;
+	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;
 	cout << "Empty Slots: " << overall_empty << endl;
 	cout << "Total Slots: " << total_slots << endl;
-	if(total_slots != (overall_successful_tx+overall_collisions+overall_empty))
+	if(total_slots != (overall_successful_tx_slots+overall_collisions+overall_empty))
 	{
-	    cout << "They differ by: " << fabs(total_slots - (overall_successful_tx+overall_collisions+overall_empty)) << endl;    
+	    cout << "They differ by: " << fabs(total_slots - (overall_successful_tx_slots+overall_collisions+overall_empty)) << endl;    
 	}else
 	{
 	    cout << "They are equal" << endl;
