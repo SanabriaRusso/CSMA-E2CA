@@ -83,7 +83,7 @@ void Channel :: Start()
 	errorProbability = 0;
 
 	slot_time.Set(SimTime()); // Let's go!
-    cpSampler.Set(SimTime() + 1); //To sample CP 1 segs after the start of the simulator	
+    cpSampler.Set(SimTime() + 0.1); //To sample CP 0.1 segs after the start of the simulator	
 	
 	collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
 
@@ -110,7 +110,7 @@ void Channel :: Sampler(trigger_t &)
 	    collisionsInTime << SimTime() << " 0" << endl;
 	}
 	
-	cpSampler.Set(SimTime() + 1);
+	cpSampler.Set(SimTime() + 0.1);
 }
 
 void Channel :: NewSlot(trigger_t &)
