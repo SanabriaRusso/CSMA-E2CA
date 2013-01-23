@@ -32,13 +32,16 @@ component Channel : public TypeII
 		// Timers
 		Timer <trigger_t> slot_time; // Duration of current slot
 		Timer <trigger_t> rx_time; // Time to receive all packets transmitted in current slot
-
+		Timer <trigger_t> cpSampler; // Sampler of the collision probability		
+		
 		inport inline void NewSlot(trigger_t& t1);
 		inport inline void EndReceptionTime(trigger_t& t2);
+		inport inline void Sampler(trigger_t& t3);
 
 		Channel () { 
 			connect slot_time.to_component,NewSlot; 
-			connect rx_time.to_component,EndReceptionTime; }
+			connect rx_time.to_component,EndReceptionTime;
+		    connect cpSampler.to_component,Sampler; }
 
 	private:
 		int number_of_transmissions_in_current_slot;
@@ -79,7 +82,8 @@ void Channel :: Start()
 	aggregation = 0;
 	errorProbability = 0;
 
-	slot_time.Set(SimTime()); // Let's go!	
+	slot_time.Set(SimTime()); // Let's go!
+    cpSampler.Set(SimTime() + 1); //To sample CP 1 segs after the start of the simulator	
 	
 	collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
 
@@ -91,8 +95,23 @@ void Channel :: Stop()
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
 	
-	//collisionsInTime.close();
+	collisionsInTime.close();
 };
+
+void Channel :: Sampler(trigger_t &)
+{
+    //Statistics for the evolution of Cp
+	if(total_slots) 
+	{
+	    collisionsInTime << SimTime() << " " << collision_slots/total_slots << endl;
+	}
+	else
+	{
+	    collisionsInTime << SimTime() << " 0" << endl;
+	}
+	
+	cpSampler.Set(SimTime() + 1);
+}
 
 void Channel :: NewSlot(trigger_t &)
 {
@@ -131,18 +150,6 @@ void Channel :: EndReceptionTime(trigger_t &)
 	}
 
 	total_slots+=aggregation;
-	
-	//Statistics for the evolution of Cp
-	if(total_slots) 
-	{
-	    collisionsInTime << SimTime() << " " << collision_slots/total_slots << endl;
-	}
-	else
-	{
-	    collisionsInTime << SimTime() << " 0" << endl;
-	}
-	
-	
 }
 
 
