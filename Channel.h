@@ -55,6 +55,7 @@ component Channel : public TypeII
 
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
+		long long int test;
 };
 
 void Channel :: Setup()
@@ -72,6 +73,7 @@ void Channel :: Start()
 	empty_slots = 0;
 	succesful_slots = 0;
 	total_slots = 0;
+	test = 0;
 
 	L_max = 0;
 	
@@ -83,7 +85,7 @@ void Channel :: Start()
 	errorProbability = 0;
 
 	slot_time.Set(SimTime()); // Let's go!
-    cpSampler.Set(SimTime() + 0.1); //To sample CP 0.1 segs after the start of the simulator	
+    cpSampler.Set(SimTime() + 1); //To sample CP 1 segs after the start of the simulator	
 	
 	collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
 
@@ -101,6 +103,7 @@ void Channel :: Stop()
 void Channel :: Sampler(trigger_t &)
 {
     //Statistics for the evolution of Cp
+    /*
 	if(total_slots) 
 	{
 	    collisionsInTime << SimTime() << " " << collision_slots/total_slots << endl;
@@ -110,7 +113,8 @@ void Channel :: Sampler(trigger_t &)
 	    collisionsInTime << SimTime() << " 0" << endl;
 	}
 	
-	cpSampler.Set(SimTime() + 0.1);
+	cpSampler.Set(SimTime() + 1);
+	*/
 }
 
 void Channel :: NewSlot(trigger_t &)
@@ -151,6 +155,13 @@ void Channel :: EndReceptionTime(trigger_t &)
 	}
 
 	total_slots++;
+	test++;
+	
+    if((test % 1000 == 0) && (test < 10001))
+	{
+	        collisionsInTime << test << " " << collision_slots/total_slots << endl;
+	}
+	
 }
 
 
