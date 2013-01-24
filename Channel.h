@@ -62,11 +62,12 @@ component Channel : public TypeII
 		float errorProbability;
 		
 		//gathering statistics about the collision's evolution in time
-     	ofstream collisionsInTime;
+     	ofstream slotsInTime;
 
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
 		double totalBitsSent;
+		double aMPDU; //the same as aggregation
 		long long int test;
 };
 
@@ -103,7 +104,7 @@ void Channel :: Start()
 	slot_time.Set(SimTime()); // Let's go!
     cpSampler.Set(SimTime() + 1); //To sample CP 1 segs after the start of the simulator	
 	
-	//collisionsInTime.open("Results/collisionsInTime.txt", ios::app);
+	slotsInTime.open("Results/slotsInTime.txt", ios::app);
 
 };
 
@@ -113,7 +114,7 @@ void Channel :: Stop()
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
 	
-	//collisionsInTime.close();
+	slotsInTime.close();
 };
 
 void Channel :: Sampler(trigger_t &)
@@ -122,11 +123,11 @@ void Channel :: Sampler(trigger_t &)
     /*
 	if(total_slots) 
 	{
-	    collisionsInTime << SimTime() << " " << collision_slots/total_slots << endl;
+	    slotsInTime << SimTime() << " " << collision_slots/total_slots << endl;
 	}
 	else
 	{
-	    collisionsInTime << SimTime() << " 0" << endl;
+	    slotsInTime << SimTime() << " 0" << endl;
 	}
 	
 	cpSampler.Set(SimTime() + 1);
@@ -162,7 +163,7 @@ void Channel :: EndReceptionTime(trigger_t &)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
 		succesful_slots ++;
-		totalBitsSent += (16 + aggregation*(32+(L_max*8)+288) + 6);
+		totalBitsSent += (16 + aMPDU*(32+(L_max*8)+288) + 6);
 		
 	}
 	if(number_of_transmissions_in_current_slot > 1)
@@ -175,12 +176,12 @@ void Channel :: EndReceptionTime(trigger_t &)
 	total_slots++;
 	
 	//Used to plot slots vs. collision probability
-	/*test++;
+	test++;
 	
     if((test % 1000 == 0) && (test < 10001))
 	{
-	        collisionsInTime << test << " " << collision_slots/total_slots << endl;
-	}*/
+	        slotsInTime << Nodes << " " <<  test << " " << collision_slots/total_slots << " " << succesful_slots/total_slots << " " << empty_slots/total_slots << endl;
+	}
 	
 }
 
@@ -191,6 +192,7 @@ void Channel :: in_packet(Packet &packet)
 	if(packet.L > L_max) L_max = packet.L;
 	
 	aggregation = packet.aggregation;
+	aMPDU = aggregation;
 	
 	errorProbability = rand() % 100 + 1;
 	
