@@ -87,6 +87,7 @@ int main()
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
+	multiAverage << "1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay" << endl;
     
     while(getline(inputFile,input))
     {
@@ -150,6 +151,7 @@ int main()
     		double stDeviation = 0.0;
     		double stDeviationDelay = 0.0;
     		double avgJFI = 0;
+		double stdJFI = 0;
     		double avgDelay = 0;
     		
     		
@@ -165,22 +167,24 @@ int main()
     		avgDelay = numeratorDelay/iterator;
     		
     		//Computing the standard deviation for the error bars
-    		//by calculating the STD
+		numeratorJFI = 0;
     		for(int j = 0; j <= iterator; j++)
     		{	
     			if(meanCarrier[j].rate > 0)
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
     				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
+				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
     			}
     		}
     		
     		stDeviation = sqrt((1./(iterator))*numerator2);
     		stDeviationDelay = sqrt((1./(iterator))*numeratorSTDelay);
+		stdJFI = sqrt((1./(iterator))*numeratorJFI);
     		
 
     		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << endl;
     		iterator = 0;
     		
     	}
