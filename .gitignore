@@ -1,3 +1,5 @@
 Sim_SlottedCSMA
 *~
 *.cxx
+*.txt
+*.gp
