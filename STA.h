@@ -25,7 +25,7 @@ component STA : public TypeII
         int K; //max queue size
         int system_stickiness; //global stickiness
         int station_stickiness;
-        int stageStickiness;
+        int hysteresis;
         int fairShare;
 	
         long int observed_slots;
@@ -162,7 +162,7 @@ void STA :: in_slot(SLOT_notification &slot)
 
                 txAttempt = 0;
                 
-                if(stageStickiness == 0) backoff_stage = 0;
+                if(hysteresis == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
 
@@ -235,7 +235,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     txAttempt = 0;
                     //after dropping a frame in DCF, the backoff_stage is reset
-                    if(stageStickiness == 0) backoff_stage = 0;
+                    if(hysteresis == 0) backoff_stage = 0;
                     
                     //Removing the number of packets as in the aggregation structure of the
                     //discarded packet, then grabbing a new one

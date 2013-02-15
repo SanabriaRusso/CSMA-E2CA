@@ -23,7 +23,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift, int simSeed);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, int simSeed);
 		void Stop();
 		void Start();		
 
@@ -42,7 +42,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int stageStickiness, int fairShare, float channelErrors, float slotDrift, int simSeed)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, int simSeed)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -64,7 +64,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].K = 1000;
 		stas[n].system_stickiness = Stickiness;
 		stas[n].station_stickiness = 0;
-		stas[n].stageStickiness = stageStickiness;
+		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
 
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 {
 	if(argc < 11) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness stageStickiness fairShare channelErrors slotDrift simSeed\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness hysteresis fairShare channelErrors slotDrift simSeed\n");
 		return 0;
 	}
 	
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 	double Bandwidth = atof(argv[4]);
 	int Batch = atoi(argv[5]); // =1
 	int Stickiness = atoi(argv[6]); // 0 = DCF, up to 2.
-	int stageStickiness = atoi(argv[7]); //keep the current BO stage, until queue's empty
+	int hysteresis = atoi(argv[7]); //keep the current BO stage, until queue's empty
 	int fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
 	int channelErrors = atof(argv[9]); // float 0-1
 	int slotDrift = atof(argv[10]); // // float 0-1
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 		
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, stageStickiness, fairShare, channelErrors, slotDrift, simSeed);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, hysteresis, fairShare, channelErrors, slotDrift, simSeed);
 	
 	test.Run();
 
