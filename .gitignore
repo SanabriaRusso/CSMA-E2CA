@@ -3,3 +3,15 @@ Sim_SlottedCSMA
 *.cxx
 *.txt
 *.gp
+Results/multiSim/delay/old/
+Results/multiSim/old/
+Results/multiSim/slotsInTime/500rep/
+Results/multiSim/slotsInTime/lab/
+Results/multiSim/slotsInTime/old/
+Results/multiSim/slotsInTime/possiblyGood/
+Results/multiSim/slotsInTime/raw/
+Results/old/
+Sim_SlottedCSMA (lsr-NeTS's conflicted copy 2013-01-23)
+multiSim
+multiSim2.cpp
+stats/stats-11n.h
