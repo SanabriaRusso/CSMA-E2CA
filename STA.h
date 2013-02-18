@@ -178,13 +178,15 @@ void STA :: in_slot(SLOT_notification &slot)
                 //After successful tx, the sta_st goes back to sys_st
                 station_stickiness = system_stickiness;
                 
-                if(station_stickiness == 0)
+                backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                
+                /*if(station_stickiness == 0)
                 {
                     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);    
                 }else
                 {  
                     backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
-                }
+                }*/
                
                 if (MAC_queue.QueueSize() == 0)
                 {
@@ -219,15 +221,18 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(station_stickiness == 0)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                        backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                        //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                        backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                     }else //still sticky
                     {
-                        backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
+                        //backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
+                        backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                     }
                 }else
                 {
                     backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
                     
                                                                   
@@ -254,7 +259,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     packet.send_time = SimTime();
                     
                     //Setting the new backoff_counter
-                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
+                    //backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
+                    backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
             }
             else
@@ -278,7 +284,7 @@ void STA :: in_slot(SLOT_notification &slot)
         
     }
     
-    if(driftProbability > 0)
+    /*if(driftProbability > 0)
     {
         if(backoff_counter == 2)
         {
@@ -294,7 +300,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 driftedSlots++;
             }
         }
-    }
+    }*/
         
     
     
