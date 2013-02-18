@@ -15,3 +15,4 @@ Sim_SlottedCSMA (lsr-NeTS's conflicted copy 2013-01-23)
 multiSim
 multiSim2.cpp
 stats/stats-11n.h
+*.DS_Store
