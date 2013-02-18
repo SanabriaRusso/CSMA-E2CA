@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Aux.h"
 #include "FIFO.h"
+#include "includes/backoff.hh"
 
 #define CWMIN 16 //to comply with 802.11n. Was 32.
 #define MAXSTAGE 5
@@ -187,6 +188,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 {  
                     backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
                 }*/
+                
+                cout << "id: " << node_id << ", " << backoff_counter << endl;
                
                 if (MAC_queue.QueueSize() == 0)
                 {
@@ -221,18 +224,19 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(station_stickiness == 0)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                        //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-                        backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                        backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                        //backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                        //cout << "id: " << node_id << ", " << backoff_counter << endl;
                     }else //still sticky
                     {
-                        //backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
-                        backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                        backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
+                        //backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                     }
                 }else
                 {
                     backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                    //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
-                    backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
+                    //backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
                     
                                                                   
@@ -259,8 +263,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     packet.send_time = SimTime();
                     
                     //Setting the new backoff_counter
-                    //backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
-                    backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                    backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
+                    //backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
             }
             else
