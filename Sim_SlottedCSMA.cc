@@ -39,6 +39,7 @@ component SlottedCSMA : public CostSimEng
 		double Bandwidth_;
 		int PacketLength_;
 		int Batch_;
+		float drift;
 
 };
 
@@ -46,6 +47,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
+	drift = slotDrift;
 
 	stas.SetSize(NumNodes);
 	sources.SetSize(NumNodes);
@@ -173,7 +175,7 @@ void SlottedCSMA :: Stop()
 	for(int k = 0; k < Nodes; k++)
 	{
 	    fair_numerator += stas_throughput[k];
-        fair_denominator += pow(stas_throughput[k],2);        
+	    fair_denominator += pow(stas_throughput[k],2);        
 	}
 	
 	fairness_index = (pow(fair_numerator,2)) / (Nodes*fair_denominator);
@@ -199,6 +201,7 @@ void SlottedCSMA :: Stop()
 	
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
+	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;
 	cout << "Empty Slots: " << overall_empty << endl;
