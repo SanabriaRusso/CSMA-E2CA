@@ -229,10 +229,10 @@ void STA :: in_slot(SLOT_notification &slot)
                         //cout << "id: " << node_id << ", " << backoff_counter << endl;
                     }else //still sticky
                     {
-                        backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
+                        //backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
                         
                         //Weird scenario at the moment. Just for a system_stickiness > 1
-                        //backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
+                        backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                         //cout << "id: " << node_id << ", " << backoff_counter << endl;
                     }
                 }else
