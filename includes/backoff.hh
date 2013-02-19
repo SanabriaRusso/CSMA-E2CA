@@ -32,11 +32,11 @@ int backoff(int backoff_stage, int stickiness, float driftProbability){
 	    if((slotDrift > 0) && (slotDrift <= driftProbability/2.))
 	    {
 	        backoff_counter--; //leads one slot
-	        cout << "Leads one slot" << endl;
+	        //cout << "Leads one slot" << endl;
 	    }else if((slotDrift > driftProbability/2.) && (slotDrift <= driftProbability))
 	    {
 	        backoff_counter++; //lags one slot
-	        cout << "Lags one slot" << endl;
+	        //cout << "Lags one slot" << endl;
 	    }
 	}
 	return (backoff_counter);
