@@ -48,6 +48,10 @@ component STA : public TypeII
         
         float slotDrift;
         float driftProbability; //system slot drift probability
+        
+        //temporal statistics
+        int finalBackoffStage;
+        //
 
     private:
         int backoff_counter;
@@ -98,6 +102,10 @@ void STA :: Start()
     
     slotDrift = 0;
     driftedSlots = 0;
+    
+    //statistics
+    finalBackoffStage = 0;
+    //
 
 };
 
@@ -108,7 +116,11 @@ void STA :: Stop()
     
     staDelay = (float)txDelay / (float)non_blocked_packets;
     
-	cout << endl;
+    //temporal statistics
+    finalBackoffStage = backoff_stage;
+    //
+    
+    cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
     cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
     cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        

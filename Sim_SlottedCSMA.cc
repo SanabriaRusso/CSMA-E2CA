@@ -120,7 +120,10 @@ void SlottedCSMA :: Stop()
 	double stas_throughput [Nodes];
 	double fairness_index = 0;
 	double systemTXDelay = 0;
-
+	
+	//temporal statistics
+	float avgBackoffStage = 0;
+	//
 	
 	for(int n=0;n<Nodes;n++)
 	{
@@ -128,7 +131,11 @@ void SlottedCSMA :: Stop()
 	    driftedSlots += stas[n].driftedSlots;
 	    tx_slots += stas[n].total_transmissions;
 	    
-	    overall_successful_tx+=stas[n].successful_transmissions;	
+	    overall_successful_tx+=stas[n].successful_transmissions;
+	    
+	    //temporal statistics
+	    avgBackoffStage += stas[n].finalBackoffStage;
+	    //
 	}
 	overall_collisions = channel.collision_slots;
 	overall_empty = channel.empty_slots;
@@ -140,6 +147,9 @@ void SlottedCSMA :: Stop()
 	delay_res = delay_res/Nodes;
 	
 	avg_tau = avg_tau/Nodes;
+	
+	//temporal statistics
+	avgBackoffStage /= Nodes;
 	
 	//Computing the standard deviation of each of the station's tau
 	//Also capturing each station's throughput to build the Jain's index
@@ -175,7 +185,7 @@ void SlottedCSMA :: Stop()
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
-	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << endl;
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -188,6 +198,7 @@ void SlottedCSMA :: Stop()
 	
 	
 	cout << "***Debugg***" << endl;
+	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;
 	cout << "Empty Slots: " << overall_empty << endl;
