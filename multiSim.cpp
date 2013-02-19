@@ -88,7 +88,7 @@ int main()
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
-	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage" << endl;
+	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots" << endl;
     
     while(getline(inputFile,input))
     {
@@ -144,7 +144,7 @@ int main()
 	    	double avgBackoffStage;
     		backoffStage >> avgBackoffStage;
 	    	//cout << avgBackoffStage << endl;
-    		meanCarrier[iterator].backoffStage = avgBackoffStage; 
+    		meanCarrier[iterator].backoffStage = avgBackoffStage;
     		
     	
     		iterator++;
@@ -164,6 +164,9 @@ int main()
     		double avgBOStage = 0;
     		double numSTDBOS = 0;
     		double stdBOS = 0;
+    		double avgCP = 0;
+    		double numCP = 0;
+    		double stdCP = 0;
     		
     		
     		//Computing the averages
@@ -173,11 +176,13 @@ int main()
     			numeratorJFI += (meanCarrier[i].JFI);
     			numeratorDelay += (meanCarrier[i].delay);
     			avgBOStage += (meanCarrier[i].backoffStage);
+    			avgCP += (meanCarrier[i].cp);
     		}
     		average = numerator/iterator;
     		avgJFI = numeratorJFI/iterator;
     		avgDelay = numeratorDelay/iterator;
     		avgBOStage /= iterator;
+    		avgCP /= iterator;
     		
     		//Computing the standard deviation for the error bars
 		numeratorJFI = 0;
@@ -189,6 +194,7 @@ int main()
     				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
 				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
 				numSTDBOS += pow((meanCarrier[j].backoffStage) - avgBOStage,2);
+				numCP += pow((meanCarrier[j].cp) - avgCP,2);
     			}
     		}
     		
@@ -196,10 +202,9 @@ int main()
     		stDeviationDelay = sqrt((1./(iterator))*numeratorSTDelay);
 		stdJFI = sqrt((1./(iterator))*numeratorJFI);
 		stdBOS = sqrt((1./(iterator))*numSTDBOS);
-    		
-
-    		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << endl;
+		stdCP = sqrt((1./(iterator))*numCP);
+    		    		
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << endl;
     		iterator = 0;
     		
     	}
