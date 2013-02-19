@@ -29,7 +29,7 @@ int backoff(int backoff_stage, int stickiness, float driftProbability){
 	    float slotDrift = rand() % 100 + 1;
 	    slotDrift/=100;
 	    //cout << slotDrift << endl;
-	    if((slotDrift > 0) && (slotDrift <= driftProbability/2.))
+	    if((backoff_counter > 0) && (slotDrift > 0) && (slotDrift <= driftProbability/2.))
 	    {
 	        backoff_counter--; //leads one slot
 	        //cout << "Leads one slot" << endl;
