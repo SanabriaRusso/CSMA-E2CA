@@ -24,17 +24,19 @@ int backoff(int backoff_stage, int stickiness, float driftProbability){
 	//Determining the slot drift according to the probability
 	
 	//if driftProbability = p, then with p/2 it will lead a slot and with p/2 it will lag a slot
+	//cout << driftProbability << endl;
 	if(driftProbability > 0){
-	
 	    float slotDrift = rand() % 100 + 1;
 	    slotDrift/=100;
-	
+	    //cout << slotDrift << endl;
 	    if((slotDrift > 0) && (slotDrift <= driftProbability/2.))
 	    {
 	        backoff_counter--; //leads one slot
+	        cout << "Leads one slot" << endl;
 	    }else if((slotDrift > driftProbability/2.) && (slotDrift <= driftProbability))
 	    {
 	        backoff_counter++; //lags one slot
+	        cout << "Lags one slot" << endl;
 	    }
 	}
 	return (backoff_counter);

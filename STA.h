@@ -139,7 +139,7 @@ void STA :: in_slot(SLOT_notification &slot)
 
     if (node_id == 0)
     {
-        //
+        //cout << "Drift: " << driftProbability << endl;
     }
 
     if (backlogged)

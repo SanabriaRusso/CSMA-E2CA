@@ -235,8 +235,8 @@ int main(int argc, char *argv[])
 	int Stickiness = atoi(argv[6]); // 0 = DCF, up to 2.
 	int hysteresis = atoi(argv[7]); //keep the current BO stage, until queue's empty
 	int fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
-	int channelErrors = atof(argv[9]); // float 0-1
-	int slotDrift = atof(argv[10]); // // float 0-1
+	float channelErrors = atof(argv[9]); // float 0-1
+	float slotDrift = atof(argv[10]); // // float 0-1
 	int simSeed = atof(argv[11]); //Simulation seed
 
 
