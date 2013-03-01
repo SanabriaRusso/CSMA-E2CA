@@ -4,7 +4,6 @@
 #include "Aux.h"
 #include "FIFO.h"
 #include "includes/backoff.hh"
-//test
 
 #define CWMIN 16 //to comply with 802.11n. Was 32.
 #define MAXSTAGE 5
@@ -12,6 +11,12 @@
 //Suggested value is MAXSTAGE+1
 #define MAX_RET 6
 
+//For computing the transmission duration
+#define SLOT 16e-06
+#define DIFS 34e-06
+#define SIFS 9e-06
+#define LDBPS 256
+#define TSYM 4e-06
 
 using namespace std;
 
@@ -46,6 +51,12 @@ component STA : public TypeII
         double txDelay;
         double throughput;
         double staDelay; //overall station's delay
+        
+        //Transmission duration
+        double successfullTXDuration;
+        double TBack; //duration of a block ack
+        double emptySlot;
+        int LMax;
         
         float slotDrift;
         float driftProbability; //system slot drift probability
@@ -108,6 +119,11 @@ void STA :: Start()
     finalBackoffStage = 0;
     //
 
+    //Transmission duration
+    TBack = 32e-06 + ceil((16 + 256 + 6)/LDBPS) * TSYM;
+    emptySlot = 9e-06;
+    LMax = 0;
+    
 };
 
 void STA :: Stop()
@@ -318,6 +334,13 @@ void STA :: in_slot(SLOT_notification &slot)
         {
             packet.aggregation = 1;
         }
+        
+        if(packet.L > LMax) LMax = packet.L;
+        
+        successfullTXDuration = 32e-06 + ceil((16 + packet.aggregation*(32+(LMax*8)+288) + 6)/LDBPS)*TSYM + SIFS + TBack + DIFS + emptySlot;
+        
+        packet.txDuration = successfullTXDuration;
+
         out_packet(packet);
     }
     

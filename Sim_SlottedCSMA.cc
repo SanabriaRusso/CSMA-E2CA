@@ -214,7 +214,7 @@ void SlottedCSMA :: Stop()
 	    cout << "They are equal" << endl;
 	}
 	
-	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << " equals = " << (channel.totalBitsSent)/SimTime() << endl;
+	cout << "Total bits sent: " << channel.totalBitsSent << "bits, if divided by " << SimTime() << "seconds, equals = " << (channel.totalBitsSent)/SimTime() << endl;
 	
 
 };

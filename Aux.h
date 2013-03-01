@@ -9,6 +9,7 @@ struct Packet
 	int seq;
 	double send_time; //time at which a packet is picked from the MAC queue
 	int aggregation; //used whenever fairShare is activated
+	double txDuration; //The duration of the transmission
 };
 
 struct SLOT_notification
