@@ -183,7 +183,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 
                 //Deleting as many packets as the aggregation field in the sent packet structure
                 int qSize = MAC_queue.QueueSize();
-                for(int i = 0; i <= std::min(packet.aggregation, qSize -1); i++)
+                for(int i = 0; i <= std::min((int)pow(2,packet.aggregation), qSize -1); i++)
                 {
                     MAC_queue.DelFirstPacket();
                 }
