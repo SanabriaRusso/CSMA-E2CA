@@ -211,8 +211,12 @@ void SlottedCSMA :: Stop()
 	cout << "Standard Deviation = " << (double)std_tau << endl;
 	cout << "Overall Throughput = " << overall_throughput << endl;
 	
-	//Error check
-	if(fair_numerator != (accumThroughputDCF + accumThroughputECA)) cout << "Error gathering the throughput of each station" << endl;
+	//Need to fix this
+	if(fair_numerator != (accumThroughputDCF + accumThroughputECA))
+	{
+		cout << "Error gathering the throughput of each station" << endl;
+		cout << "Total: " << fair_numerator << " DCF: " accumThroughputDCF << ", ECA: " << accumThroughputECA << endl;
+	}
 	
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	cout << "Overall average system TX delay = " << systemTXDelay << endl;

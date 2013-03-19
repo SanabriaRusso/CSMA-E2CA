@@ -84,13 +84,13 @@ void STA :: Start()
 	//Determining the protocol of this station
 	if(percentageNodesWithDCF > 0)
 	{
-		pickingDCF = Random(100) + 1;
+		pickingDCF = Random(100);
 		pickingDCF/=100;
 		
 		if(pickingDCF < percentageNodesWithDCF)
 		{
 			//This node will pick DCF as its contention protocol
-			cout << "I am using DCF" << endl;
+			cout << node_id << ": I am using DCF" << endl;
 			system_stickiness = 0;
 			station_stickiness = 0;
 			hysteresis = 0;
@@ -98,7 +98,7 @@ void STA :: Start()
 			
 		}else
 		{
-			cout << "I am using full ECA" << endl;
+			cout << node_id << ": I am not using DCF" << endl;
 		}
 	}
 
