@@ -55,7 +55,7 @@ component STA : public TypeII
         
         //Protocol picking
         float pickingDCF;
-        float percentageNodesWithDCF;
+        float percentageNodesWithDCF; //system variable
 
     private:
         int backoff_counter;

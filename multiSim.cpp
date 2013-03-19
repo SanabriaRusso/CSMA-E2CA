@@ -15,6 +15,9 @@ struct nodesAverage{
 	double bandwidth;
 	double delay;
 	float backoffStage;
+	double throughputDCF;
+	double throughputECA;
+	double sumDCFandECA;
 };
 
 int main()
@@ -91,7 +94,7 @@ int main()
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
-	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots" << endl;
+	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16" << endl;
     
     while(getline(inputFile,input))
     {
@@ -142,13 +145,33 @@ int main()
 	    	//cout << sysDelay << endl;
     		meanCarrier[iterator].delay = sysDelay; 
 
-  		getline(tokenizer, token, ' ');
+    		getline(tokenizer, token, ' ');
     		istringstream backoffStage(token);
 	    	double avgBackoffStage;
     		backoffStage >> avgBackoffStage;
 	    	//cout << avgBackoffStage << endl;
     		meanCarrier[iterator].backoffStage = avgBackoffStage;
     		
+    		getline(tokenizer, token, ' ');
+    		istringstream DCF(token);
+	    	double throughputDCF;
+    		DCF >> throughputDCF;
+	    	//cout << throughputDCF << endl;
+    		meanCarrier[iterator].throughputDCF = throughputDCF;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream ECA(token);
+	    	double throughputECA;
+    		ECA >> throughputECA;
+	    	//cout << throughputECA << endl;
+    		meanCarrier[iterator].throughputECA = throughputECA;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream sum(token);
+	    	double sumDCFandECA;
+    		sum >> sumDCFandECA;
+	    	//cout << sumDCFandECA << endl;
+    		meanCarrier[iterator].sumDCFandECA = sumDCFandECA;
     	
     		iterator++;
     	}else
@@ -162,7 +185,7 @@ int main()
     		double stDeviation = 0.0;
     		double stDeviationDelay = 0.0;
     		double avgJFI = 0;
-		double stdJFI = 0;
+    		double stdJFI = 0;
     		double avgDelay = 0;
     		double avgBOStage = 0;
     		double numSTDBOS = 0;
@@ -170,6 +193,12 @@ int main()
     		double avgCP = 0;
     		double numCP = 0;
     		double stdCP = 0;
+    		double avgThroughputDCF = 0;
+    		double avgThroughputECA = 0;
+    		double stdThroughputDCF = 0;
+    		double stdThroughputECA = 0;
+    		double avgSumThroughput = 0;
+    		double stdSumThroughput = 0;
     		
     		
     		//Computing the averages
@@ -180,34 +209,46 @@ int main()
     			numeratorDelay += (meanCarrier[i].delay);
     			avgBOStage += (meanCarrier[i].backoffStage);
     			avgCP += (meanCarrier[i].cp);
+    			avgThroughputDCF += (meanCarrier[i].throughputDCF);
+    			avgThroughputECA += (meanCarrier[i].throughputECA);
+    			avgSumThroughput += (meanCarrier[i].sumDCFandECA);
     		}
     		average = numerator/iterator;
     		avgJFI = numeratorJFI/iterator;
     		avgDelay = numeratorDelay/iterator;
     		avgBOStage /= iterator;
     		avgCP /= iterator;
+    		avgThroughputDCF /= iterator;
+    		avgThroughputECA /= iterator;
+    		avgSumThroughput /= iterator;
     		
     		//Computing the standard deviation for the error bars
-		numeratorJFI = 0;
+    		numeratorJFI = 0;
     		for(int j = 0; j <= iterator; j++)
     		{	
     			if(meanCarrier[j].rate > 0)
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
     				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
-				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
-				numSTDBOS += pow((meanCarrier[j].backoffStage) - avgBOStage,2);
-				numCP += pow((meanCarrier[j].cp) - avgCP,2);
+    				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
+    				numSTDBOS += pow((meanCarrier[j].backoffStage) - avgBOStage,2);
+    				numCP += pow((meanCarrier[j].cp) - avgCP,2);
+    				stdThroughputDCF += pow((meanCarrier[j].throughputDCF) - avgThroughputDCF,2);
+    				stdThroughputECA += pow((meanCarrier[j].throughputECA) - avgThroughputECA,2);
+    				stdSumThroughput += pow((meanCarrier[j].sumDCFandECA) - avgSumThroughput,2);
     			}
     		}
     		
     		stDeviation = sqrt((1./(iterator))*numerator2);
     		stDeviationDelay = sqrt((1./(iterator))*numeratorSTDelay);
-		stdJFI = sqrt((1./(iterator))*numeratorJFI);
-		stdBOS = sqrt((1./(iterator))*numSTDBOS);
-		stdCP = sqrt((1./(iterator))*numCP);
+    		stdJFI = sqrt((1./(iterator))*numeratorJFI);
+    		stdBOS = sqrt((1./(iterator))*numSTDBOS);
+    		stdCP = sqrt((1./(iterator))*numCP);
+    		stdThroughputDCF = sqrt((1./(iterator))*stdThroughputDCF);
+    		stdThroughputECA = sqrt((1./(iterator))*stdThroughputECA);
+    		stdSumThroughput = sqrt((1./(iterator))*stdSumThroughput);
     		    		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << endl;
     		iterator = 0;
     		
     	}

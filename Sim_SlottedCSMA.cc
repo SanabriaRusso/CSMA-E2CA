@@ -113,11 +113,16 @@ void SlottedCSMA :: Stop()
 	double tx_slots = 0;
 	double overall_throughput = 0;
 	
+	
 
 	float avg_tau = 0;
 	float std_tau = 0;
 	
 	double stas_throughput [Nodes];
+	double stas_throughputDCF [Nodes];
+	double stas_throughputECA [Nodes];
+	double accumThroughputDCF = 0;
+	double accumThroughputECA = 0;
 	double fairness_index = 0;
 	double systemTXDelay = 0;
 	
@@ -159,6 +164,19 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
+	    
+	    //Separating the collection of throughput of DCF and ECA stations
+	    if(stas[i].pickingDCF < stas[i].percentageNodesWithDCF)
+	    {
+	    	stas_throughputDCF[i] = stas[i].throughput;
+	    	stas_throughputECA[i] = 0;
+	    }else
+	    {
+	    	stas_throughputECA[i] = stas[i].throughput;
+	    	stas_throughputDCF[i] = 0;
+	    }
+	    accumThroughputDCF += stas_throughputDCF[i];
+	    accumThroughputECA += stas_throughputECA[i];
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
@@ -185,13 +203,17 @@ void SlottedCSMA :: Stop()
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
-	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << endl;
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << " " << accumThroughputDCF << " " << accumThroughputECA << " " << fair_numerator << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
 	cout << "Average TAU = " << avg_tau << endl;
 	cout << "Standard Deviation = " << (double)std_tau << endl;
 	cout << "Overall Throughput = " << overall_throughput << endl;
+	
+	//Error check
+	if(fair_numerator != (accumThroughputDCF + accumThroughputECA)) cout << "Error gathering the throughput of each station" << endl;
+	
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	cout << "Overall average system TX delay = " << systemTXDelay << endl;
 	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl << endl;
@@ -212,7 +234,7 @@ void SlottedCSMA :: Stop()
 	    cout << "They are equal" << endl;
 	}
 	
-	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << " equals = " << (channel.totalBitsSent)/SimTime() << endl;
+	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << "seconds of simulation, equals = " << (channel.totalBitsSent)/SimTime() << endl;
 	
 
 };
