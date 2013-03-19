@@ -23,7 +23,7 @@ using namespace std;
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, int simSeed);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift,float percentageDCF, int simSeed);
 		void Stop();
 		void Start();		
 
@@ -43,7 +43,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, int simSeed)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, float percentageDCF, int simSeed)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -54,7 +54,6 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 
 	// Channel	
 	channel.Nodes = NumNodes;
-	channel.fairShare = fairShare;
 	channel.out_slot.SetSize(NumNodes);
 	channel.error = channelErrors;
 
@@ -69,20 +68,19 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
+		stas[n].percentageNodesWithDCF = percentageDCF/100;
 
 
 		// Traffic Source
 		sources[n].bandwidth = Bandwidth;
 		sources[n].L = PacketLength;
 		sources[n].MaxBatch = Batch;
-		sources[n].aggregation = fairShare;
-
 	}
 	
 	// Connections
 	for(int n=0;n<NumNodes;n++)
 	{
-        	connect channel.out_slot[n],stas[n].in_slot;
+        connect channel.out_slot[n],stas[n].in_slot;
 		connect stas[n].out_packet,channel.in_packet;
 		connect sources[n].out,stas[n].in_packet;
 
@@ -240,7 +238,8 @@ int main(int argc, char *argv[])
 	int fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
 	float channelErrors = atof(argv[9]); // float 0-1
 	float slotDrift = atof(argv[10]); // // float 0-1
-	int simSeed = atof(argv[11]); //Simulation seed
+	float percentageDCF = atof(argv[11]); // // float 0-1
+	int simSeed = atof(argv[12]); //Simulation seed
 
 
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
@@ -253,7 +252,7 @@ int main(int argc, char *argv[])
 		
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, hysteresis, fairShare, channelErrors, slotDrift, simSeed);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, hysteresis, fairShare, channelErrors, slotDrift, percentageDCF, simSeed);
 	
 	test.Run();
 

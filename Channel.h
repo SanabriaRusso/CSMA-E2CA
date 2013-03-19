@@ -30,7 +30,6 @@ component Channel : public TypeII
 			
 	public:
 		int Nodes;
-		int fairShare;
 		float error;
 
 		// Connections

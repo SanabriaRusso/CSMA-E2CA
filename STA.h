@@ -52,6 +52,10 @@ component STA : public TypeII
         //temporal statistics
         int finalBackoffStage;
         //
+        
+        //Protocol picking
+        float pickingDCF;
+        float percentageNodesWithDCF;
 
     private:
         int backoff_counter;
@@ -77,6 +81,28 @@ void STA :: Setup()
 
 void STA :: Start()
 {
+	//Determining the protocol of this station
+	if(percentageNodesWithDCF > 0)
+	{
+		pickingDCF = Random(100) + 1;
+		pickingDCF/=100;
+		
+		if(pickingDCF < percentageNodesWithDCF)
+		{
+			//This node will pick DCF as its contention protocol
+			cout << "I am using DCF" << endl;
+			system_stickiness = 0;
+			station_stickiness = 0;
+			hysteresis = 0;
+			fairShare = 0;
+			
+		}else
+		{
+			cout << "I am using full ECA" << endl;
+		}
+	}
+
+	
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;
     packet.source = node_id;
@@ -123,14 +149,29 @@ void STA :: Stop()
     cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
     cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
-    cout << "Successful Transmissions:" << " " << successful_transmissions << endl;        
     cout << "Collisions:" << " " << collisions << endl;
+    cout << "Packets successfully sent:" << " " << successful_transmissions << endl;        
     cout << "*** DETAILED ***" << endl;
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
     cout << "Throughput of this station (Boris) = " << throughput << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
     cout << "Delay (queueing + service) = " << staDelay << endl;
     cout << endl;
+    
+    cout <<"-----Debug-----"<<endl;
+    if(pickingDCF < percentageNodesWithDCF)
+	{
+		//This node will pick DCF as its contention protocol
+		cout << "I am using DCF" << endl;	
+	}else
+	{
+		cout << "I am using full ECA" << endl;
+	}
+	cout << "Final backoff stage: " << finalBackoffStage << endl;
+    cout << "System stickiness: " << system_stickiness << endl;
+    cout << "Station stickiness: " << station_stickiness << endl;
+    cout << "Hysteresis: " << hysteresis << endl;
+    cout << "Fair Share: " << fairShare << endl << endl;
 };
 
 void STA :: in_slot(SLOT_notification &slot)

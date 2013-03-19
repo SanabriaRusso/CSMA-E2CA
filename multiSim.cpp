@@ -29,6 +29,7 @@ int main()
     double b_min = 11000000;
     float error = 0.0;
     float drift = 0.0;
+    float DCF = 0.0; //0-100
     
     //For the statistics file
     //int statsLength = 0;
@@ -58,13 +59,15 @@ int main()
     cin >> error;
     cout << "Slot drift (%)" << endl;
     cin >> drift;
+    cout << "Percentage of nodes executing DCF (%)" << endl;
+    cin >> DCF;
     
     for(int i = n_min; i <= n_max; i++)
     {
         for(int j = 0; j < N; j++)
         {
             //execute script   
-            command << "./Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << j << endl;
+            command << "./Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;

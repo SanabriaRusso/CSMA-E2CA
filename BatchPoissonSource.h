@@ -62,7 +62,6 @@ void BatchPoissonSource :: new_packet(trigger_t &)
 	for(int p=0; p < RB; p++)
 	{
 		packet.seq = seq;
-		packet.aggregation = aggregation;
 		packet.send_time = SimTime();
 
 		out(packet);
