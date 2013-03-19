@@ -214,5 +214,5 @@ int main()
     }//for the while statement
     
     multiAverage.close();
-    	
+
 }

@@ -68,7 +68,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
-		stas[n].percentageNodesWithDCF = percentageDCF/100;
+		stas[n].percentageNodesWithDCF = percentageDCF;
 
 
 		// Traffic Source
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 {
 	if(argc < 11) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness hysteresis fairShare channelErrors slotDrift simSeed\n");
+		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness hysteresis fairShare channelErrors slotDrift percentageOfDCF simSeed\n");
 		return 0;
 	}
 	
