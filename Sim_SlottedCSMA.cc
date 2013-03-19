@@ -123,6 +123,10 @@ void SlottedCSMA :: Stop()
 	double stas_throughputECA [Nodes];
 	double accumThroughputDCF = 0;
 	double accumThroughputECA = 0;
+	
+	int DCFStas = 0;
+	int ECAStas = 0;
+	
 	double fairness_index = 0;
 	double systemTXDelay = 0;
 	
@@ -166,14 +170,16 @@ void SlottedCSMA :: Stop()
 	    systemTXDelay += stas[i].staDelay;
 	    
 	    //Separating the collection of throughput of DCF and ECA stations
-	    if(stas[i].pickingDCF < stas[i].percentageNodesWithDCF)
+	    if(stas[i].DCF > 0)
 	    {
 	    	stas_throughputDCF[i] = stas[i].throughput;
 	    	stas_throughputECA[i] = 0;
+	    	DCFStas++;
 	    }else
 	    {
 	    	stas_throughputECA[i] = stas[i].throughput;
 	    	stas_throughputDCF[i] = 0;
+	    	ECAStas++;
 	    }
 	    accumThroughputDCF += stas_throughputDCF[i];
 	    accumThroughputECA += stas_throughputECA[i];
@@ -203,7 +209,7 @@ void SlottedCSMA :: Stop()
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
-	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << " " << accumThroughputDCF << " " << accumThroughputECA << " " << fair_numerator << endl;
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << " " << accumThroughputDCF/DCFStas << " " << accumThroughputECA/ECAStas << " " << fair_numerator << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -212,10 +218,10 @@ void SlottedCSMA :: Stop()
 	cout << "Overall Throughput = " << overall_throughput << endl;
 	
 	//Need to fix this
-	if(fair_numerator != (accumThroughputDCF + accumThroughputECA))
+	if((fair_numerator != (accumThroughputDCF + accumThroughputECA)) && (fair_numerator - (accumThroughputDCF+accumThroughputECA) > 1))
 	{
 		cout << "Error gathering the throughput of each station" << endl;
-		cout << "Total: " << fair_numerator << " DCF: " accumThroughputDCF << ", ECA: " << accumThroughputECA << endl;
+		cout << "Total: " << fair_numerator << " DCF: " << accumThroughputDCF << ", ECA: " << accumThroughputECA << ", diferring in: " << fair_numerator - (accumThroughputDCF+accumThroughputECA) << endl;
 	}
 	
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
@@ -238,7 +244,14 @@ void SlottedCSMA :: Stop()
 	    cout << "They are equal" << endl;
 	}
 	
-	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << "seconds of simulation, equals = " << (channel.totalBitsSent)/SimTime() << endl;
+	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << "seconds of simulation, equals = " << (channel.totalBitsSent)/SimTime() << endl << endl;
+
+	cout << "---Debugging the mixed scenario---" << endl;
+	cout << "There are: " << DCFStas << " stations with DCF and: " << ECAStas << " with CSMA/ECA." << endl;
+	if(Nodes != (DCFStas + ECAStas)) cout << "Miscount of stations" << endl;
+	cout << "The average throughput of DCF stations is: " << accumThroughputDCF/DCFStas << "bps" << endl;
+	cout << "The average throughput of Full CSMA/ECA staions is: " << accumThroughputECA/ECAStas << "bps" << endl;
+	cout << "CSMA/ECA / CSMA/CA ratio: " << (accumThroughputECA/ECAStas)/(accumThroughputDCF/DCFStas) << endl;
 	
 
 };
@@ -268,7 +281,30 @@ int main(int argc, char *argv[])
 	int simSeed = atof(argv[12]); //Simulation seed
 
 
-	printf("####################### Simulation (%d) #######################\n",MaxSimIter); 	
+	
+	
+	printf("####################### Simulation (%d) #######################\n",MaxSimIter);
+	if(Stickiness > 0)
+	{
+		if(hysteresis > 0)
+		{
+			if(fairShare > 0)
+			{
+				cout << "####################### Full ECA #######################" << endl;
+			}else
+			{
+				cout << "################### ECA + hysteresis ###################" << endl;
+			}
+		}else
+		{
+			cout << "###################### Basic ECA ######################" << endl;
+		}
+	}else
+	{
+		cout << "####################### CSMA/CA #######################" << endl;
+	}
+	
+	if(percentageDCF > 0) cout << "####################### Mixed setup " << percentageDCF*100 << "%#######################" << endl;
 		
 	SlottedCSMA test;
 
