@@ -249,9 +249,18 @@ void SlottedCSMA :: Stop()
 	cout << "---Debugging the mixed scenario---" << endl;
 	cout << "There are: " << DCFStas << " stations with DCF and: " << ECAStas << " with CSMA/ECA." << endl;
 	if(Nodes != (DCFStas + ECAStas)) cout << "Miscount of stations" << endl;
+	//Avoiding divisions by zero on the cout
+	if(ECAStas == 0) ECAStas = 1;
+	if(DCFStas == 0) DCFStas = 1;
 	cout << "The average throughput of DCF stations is: " << accumThroughputDCF/DCFStas << "bps" << endl;
 	cout << "The average throughput of Full CSMA/ECA staions is: " << accumThroughputECA/ECAStas << "bps" << endl;
-	cout << "CSMA/ECA / CSMA/CA ratio: " << (accumThroughputECA/ECAStas)/(accumThroughputDCF/DCFStas) << endl;
+	if((accumThroughputECA == 0) || (accumThroughputDCF == 0))
+	{
+		cout << "Some stations received no throughput, so the CSMA/ECA / CSMA/CA cannot be computed" << endl;
+	}else
+	{
+		cout << "CSMA/ECA / CSMA/CA ratio: " << (accumThroughputECA/ECAStas)/(accumThroughputDCF/DCFStas) << endl;
+	}
 	
 
 };
@@ -304,7 +313,7 @@ int main(int argc, char *argv[])
 		cout << "####################### CSMA/CA #######################" << endl;
 	}
 	
-	if(percentageDCF > 0) cout << "####################### Mixed setup " << percentageDCF*100 << "%#######################" << endl;
+	if(percentageDCF > 0) cout << "####################### Mixed setup " << percentageDCF*100 << "% #######################" << endl;
 		
 	SlottedCSMA test;
 
