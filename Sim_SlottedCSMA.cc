@@ -209,7 +209,19 @@ void SlottedCSMA :: Stop()
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
-	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << " " << accumThroughputDCF/DCFStas << " " << accumThroughputECA/ECAStas << " " << fair_numerator << endl;
+	statistics << Nodes << " " << overall_throughput << " " << overall_collisions / total_slots  << " " << fairness_index  << " " << Bandwidth_ << " " << systemTXDelay << " " << avgBackoffStage << " "; 
+	if(DCFStas > 0){ 
+	    statistics << accumThroughputDCF/DCFStas;
+	}else
+	{
+	    statistics << accumThroughputDCF;
+	}statistics << " ";
+	if(ECAStas > 0){ 
+	    statistics << accumThroughputECA/ECAStas;
+	}else
+	{
+	    statistics << accumThroughputECA;
+	}statistics << " " << fair_numerator << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
