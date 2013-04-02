@@ -40,7 +40,8 @@ component SlottedCSMA : public CostSimEng
 		int PacketLength_;
 		int Batch_;
 		float drift;
-		int cut;
+		double intCut, decimalCut, cut; 
+		
 
 };
 
@@ -61,14 +62,19 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 	// Sat Nodes
 	//Determining the cut value for assigning different protocols
 	cut = NumNodes * percentageDCF;
-	if(NumNodes % 2 != 0)
+	decimalCut = modf(cut, &intCut);
+	
+	if(decimalCut > 0.5)
+	{
+		intCut++;	
+	}
+	
+	/*if(NumNodes % 2 != 0)
 	{
 		cut++;
-	}
+	}*/
 		
-		
-	
-	cout << "Cut: " << cut << endl;
+	cout << "Cut: " << (int)intCut << endl;
 	cout << "Nodes: " << NumNodes << endl;
 	cout << "Percentage: " << percentageDCF << endl;
 	
@@ -83,7 +89,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
-		stas[n].cut = cut;
+		stas[n].cut = intCut;
 
 
 		// Traffic Source
