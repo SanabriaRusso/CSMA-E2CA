@@ -54,8 +54,9 @@ component STA : public TypeII
         //
         
         //Protocol picking
-        float pickingDCF;
-        float percentageNodesWithDCF; //system variable
+        //float pickingDCF;
+        //float percentageNodesWithDCF; //system variable
+        int cut;
         int DCF;
 
     private:
@@ -82,27 +83,18 @@ void STA :: Setup()
 
 void STA :: Start()
 {
-	//Determining the protocol of this station
-	if(percentageNodesWithDCF > 0)
+	if(node_id < cut)
 	{
-		pickingDCF = Random(100);
-		pickingDCF/=100;
-		
-		if(pickingDCF < percentageNodesWithDCF)
-		{
-			//This node will pick DCF as its contention protocol
-			cout << node_id << ": I am using DCF" << endl;
-			DCF = 1;
-			system_stickiness = 0;
-			station_stickiness = 0;
-			hysteresis = 0;
-			fairShare = 0;
-			
-		}else
-		{
-			cout << node_id << ": I am not using DCF" << endl;
-			DCF = 0;
-		}
+		cout << node_id << ": I am using DCF" << endl;
+		DCF = 1;
+		system_stickiness = 0;
+		station_stickiness = 0;
+		hysteresis = 0;
+		fairShare = 0;
+	}else
+	{
+		cout << node_id << ": I am not using DCF" << endl;
+		DCF = 0;
 	}
 		
 	
@@ -119,9 +111,6 @@ void STA :: Start()
 	{
 		DCF = 1;
 	}*/
-		
-	
-
 	
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;

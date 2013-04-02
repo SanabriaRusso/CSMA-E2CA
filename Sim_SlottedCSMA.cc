@@ -40,6 +40,7 @@ component SlottedCSMA : public CostSimEng
 		int PacketLength_;
 		int Batch_;
 		float drift;
+		int cut;
 
 };
 
@@ -58,6 +59,20 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 	channel.error = channelErrors;
 
 	// Sat Nodes
+	//Determining the cut value for assigning different protocols
+	cut = NumNodes * percentageDCF;
+	if(NumNodes % 2 != 0)
+	{
+		cut++;
+	}
+		
+		
+	
+	cout << "Cut: " << cut << endl;
+	cout << "Nodes: " << NumNodes << endl;
+	cout << "Percentage: " << percentageDCF << endl;
+	
+	
 	for(int n=0;n<NumNodes;n++)
 	{
 		// Node
@@ -68,7 +83,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
-		stas[n].percentageNodesWithDCF = percentageDCF;
+		stas[n].cut = cut;
 
 
 		// Traffic Source
@@ -229,7 +244,7 @@ void SlottedCSMA :: Stop()
 	cout << "Standard Deviation = " << (double)std_tau << endl;
 	cout << "Overall Throughput = " << overall_throughput << endl;
 	
-	//Need to fix this
+	//They differ just a little
 	if((fair_numerator != (accumThroughputDCF + accumThroughputECA)) && (fair_numerator - (accumThroughputDCF+accumThroughputECA) > 1))
 	{
 		cout << "Error gathering the throughput of each station" << endl;
@@ -283,7 +298,7 @@ int main(int argc, char *argv[])
 {
 	if(argc < 11) 
 	{
-		printf("./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness hysteresis fairShare channelErrors slotDrift percentageOfDCF simSeed\n");
+		printf("./XXXX SimTime [10] NumNodes [10] PacketLength [1024] Bandwidth [65e6] Batch [1] Stickiness [0] hysteresis [0] fairShare [0] channelErrors [0] slotDrift [0] percentageOfDCF [1] simSeed [0]\n");
 		return 0;
 	}
 	
