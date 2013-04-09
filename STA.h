@@ -5,7 +5,7 @@
 #include "FIFO.h"
 #include "includes/backoff.hh"
 
-#define CWMIN 64 //to comply with 802.11n. Was 32.
+#define CWMIN 64 //to comply with 802.11n it should 16. Was 32 for 802.11b.
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
@@ -217,11 +217,20 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
-                    //successful_transmissions+=(int)pow(2,backoff_stage);
-                    successful_transmissions+=(int)pow(2,MAXSTAGE);
+                    //successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1);
+                    successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1);
+                    
+                    //Deleting as many packets as the aggregation field in the sent packet structure
+                    //for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()-1); i++)
+                    for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1); i++)
+                    {
+                    	MAC_queue.DelFirstPacket();
+                    }
+
                 }else
                 {
                     successful_transmissions++;
+                    MAC_queue.DelFirstPacket();
                 }
 
                 txAttempt = 0;
@@ -229,30 +238,11 @@ void STA :: in_slot(SLOT_notification &slot)
                 if(hysteresis == 0) backoff_stage = 0;
                 
                 txDelay += SimTime() - packet.send_time;
-
-                //if(node_id == 0) cout << "Picket at: " << packet.send_time << ", sent at: " << SimTime() << ", with a delay of: " << SimTime() - packet.send_time << endl; 
-                
-                //Deleting as many packets as the aggregation field in the sent packet structure
-                int qSize = MAC_queue.QueueSize();
-                for(int i = 0; i <= std::min((int)pow(2,packet.aggregation), qSize -1); i++)
-                {
-                    MAC_queue.DelFirstPacket();
-                }
                 
                 //After successful tx, the sta_st goes back to sys_st
                 station_stickiness = system_stickiness;
                 
                 backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
-                
-                /*if(station_stickiness == 0)
-                {
-                    backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);    
-                }else
-                {  
-                    backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
-                }*/
-                
-                //cout << "id: " << node_id << ", " << backoff_counter << endl;
                
                 if (MAC_queue.QueueSize() == 0)
                 {
@@ -287,23 +277,16 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(station_stickiness == 0)
                     {
                         backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                        //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
                         backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
-                        //cout << "id: " << node_id << ", " << backoff_counter << endl;
                     }else //still sticky
-                    {
-                        //backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
-                        
+                    {                       
                         //Weird scenario at the moment. Just for a system_stickiness > 1
                         backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
-                        //cout << "id: " << node_id << ", " << backoff_counter << endl;
                     }
                 }else
                 {
                     backoff_stage = std::min(backoff_stage+1,MAXSTAGE);
-                    //backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
                     backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
-                    //cout << "id: " << node_id << ", " << backoff_counter << endl;
                 }
                     
                                                                   
@@ -313,13 +296,12 @@ void STA :: in_slot(SLOT_notification &slot)
                     //after dropping a frame in DCF, the backoff_stage is reset
                     if(hysteresis == 0) backoff_stage = 0;
                     
-                    //Removing the number of packets as in the aggregation structure of the
-                    //discarded packet, then grabbing a new one
+                    //Removing as many packets as were supposed to be sent
                     if(fairShare > 0)
                     {
-                        int qSize = MAC_queue.QueueSize();
-                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
-                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),qSize-1); i++)
+                        //int qSize = MAC_queue.QueueSize();
+                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1); i++)
+                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1); i++)
                         {
                             MAC_queue.DelFirstPacket();
                         }
@@ -331,10 +313,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     packet.send_time = SimTime();
                     
                     //Setting the new backoff_counter
-                    //backoff_counter = (int)Random(pow(2, backoff_stage + 1)*CWMIN);
                     backoff_counter = backoff(backoff_stage + 1, station_stickiness, driftProbability);
-                    //cout << "id: " << node_id << ", " << backoff_counter << endl;
-
                 }
             }
             else
@@ -364,8 +343,8 @@ void STA :: in_slot(SLOT_notification &slot)
         total_transmissions++;
         if(fairShare > 0)
         {
-            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1);
+            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1);
         }else
         {
             packet.aggregation = 1;
