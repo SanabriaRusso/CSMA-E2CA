@@ -5,7 +5,7 @@
 #include "FIFO.h"
 #include "includes/backoff.hh"
 
-#define CWMIN 16 //to comply with 802.11n. Was 32.
+#define CWMIN 64 //to comply with 802.11n. Was 32.
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
@@ -217,7 +217,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
-                    successful_transmissions+=(int)pow(2,backoff_stage);
+                    //successful_transmissions+=(int)pow(2,backoff_stage);
+                    successful_transmissions+=(int)pow(2,MAXSTAGE);
                 }else
                 {
                     successful_transmissions++;
@@ -317,7 +318,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(fairShare > 0)
                     {
                         int qSize = MAC_queue.QueueSize();
-                        for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
+                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),qSize-1); i++)
+                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),qSize-1); i++)
                         {
                             MAC_queue.DelFirstPacket();
                         }
@@ -362,7 +364,8 @@ void STA :: in_slot(SLOT_notification &slot)
         total_transmissions++;
         if(fairShare > 0)
         {
-            packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
         }else
         {
             packet.aggregation = 1;

@@ -5,7 +5,7 @@
 #include <math.h>
 #include <algorithm>
 
-#define CWMIN 16
+#define CWMIN 64
 
 using namespace std;
 
