@@ -96,21 +96,6 @@ void STA :: Start()
 		cout << node_id << ": I am not using DCF" << endl;
 		DCF = 0;
 	}
-		
-	
-	//Code for manually change the protocol of some stations
-	/*
-	if(node_id > 0)
-	{
-		DCF = 0;
-		system_stickiness = 1;
-		station_stickiness = 1;
-		hysteresis = 0;
-		fairShare = 0;
-	}else
-	{
-		DCF = 1;
-	}*/
 	
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;
@@ -216,12 +201,12 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
-                    //successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1);
-                    successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1);
+                    //successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                    successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                     
                     //Deleting as many packets as the aggregation field in the sent packet structure
-                    //for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()-1); i++)
-                    for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1); i++)
+                    //for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                    for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
                     {
                     	MAC_queue.DelFirstPacket();
                     }
@@ -298,8 +283,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     //Removing as many packets as were supposed to be sent
                     if(fairShare > 0)
                     {
-                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1); i++)
-                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1); i++)
+                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()); i++)
+                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
                         {
                             MAC_queue.DelFirstPacket();
                         }
@@ -341,12 +326,13 @@ void STA :: in_slot(SLOT_notification &slot)
         total_transmissions++;
         if(fairShare > 0)
         {
-            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1);
-            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1);
+            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
         }else
         {
             packet.aggregation = 1;
         }
+        
         out_packet(packet);
     }
     
