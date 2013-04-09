@@ -141,7 +141,6 @@ void STA :: Start()
     //statistics
     finalBackoffStage = 0;
     //
-
 };
 
 void STA :: Stop()
@@ -174,7 +173,7 @@ void STA :: Stop()
 		cout << "I am using DCF" << endl;	
 	}else
 	{
-		cout << "I am using full ECA" << endl;
+		cout << "I am using something different" << endl;
 	}
 	cout << "Final backoff stage: " << finalBackoffStage << endl;
     cout << "System stickiness: " << system_stickiness << endl;
@@ -256,7 +255,7 @@ void STA :: in_slot(SLOT_notification &slot)
             }
             else
             {
-                //Other stations transmit
+                //Other stations transmitted
                 //Decrement backoff_counter
                 backoff_counter--;           
             }
@@ -299,7 +298,6 @@ void STA :: in_slot(SLOT_notification &slot)
                     //Removing as many packets as were supposed to be sent
                     if(fairShare > 0)
                     {
-                        //int qSize = MAC_queue.QueueSize();
                         //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()-1); i++)
                         for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()-1); i++)
                         {

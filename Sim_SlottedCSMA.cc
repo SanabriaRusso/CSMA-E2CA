@@ -68,11 +68,6 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 	{
 		intCut++;	
 	}
-	
-	/*if(NumNodes % 2 != 0)
-	{
-		cut++;
-	}*/
 		
 	cout << "Cut: " << (int)intCut << endl;
 	cout << "Nodes: " << NumNodes << endl;
