@@ -5,7 +5,7 @@
 #include "FIFO.h"
 #include "includes/backoff.hh"
 
-#define CWMIN 64 //to comply with 802.11n it should 16. Was 32 for 802.11b.
+#define CWMIN 16 //to comply with 802.11n it should 16. Was 32 for 802.11b.
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
@@ -54,8 +54,6 @@ component STA : public TypeII
         //
         
         //Protocol picking
-        //float pickingDCF;
-        //float percentageNodesWithDCF; //system variable
         int cut;
         int DCF;
 
@@ -146,7 +144,7 @@ void STA :: Stop()
     cout << "Packets successfully sent:" << " " << successful_transmissions << endl;        
     cout << "*** DETAILED ***" << endl;
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
-    cout << "Throughput of this station (Boris) = " << throughput << "bps" << endl;
+    cout << "Throughput of this station = " << throughput << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
     cout << "Delay (queueing + service) = " << staDelay << endl;
     cout << endl;
@@ -201,12 +199,12 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
-                    //successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-                    successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                    successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                    //successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                     
                     //Deleting as many packets as the aggregation field in the sent packet structure
-                    //for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
-                    for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                    for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                    //for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
                     {
                     	MAC_queue.DelFirstPacket();
                     }
@@ -283,8 +281,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     //Removing as many packets as were supposed to be sent
                     if(fairShare > 0)
                     {
-                        //for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()); i++)
-                        for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                        for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()); i++)
+                        //for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
                         {
                             MAC_queue.DelFirstPacket();
                         }
@@ -326,8 +324,8 @@ void STA :: in_slot(SLOT_notification &slot)
         total_transmissions++;
         if(fairShare > 0)
         {
-            //packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-            packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+            packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+            //packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
         }else
         {
             packet.aggregation = 1;

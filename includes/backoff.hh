@@ -5,7 +5,7 @@
 #include <math.h>
 #include <algorithm>
 
-#define CWMIN 64 //should be the same as ../STA.h
+#define CWMIN 16 //should be the same as ../STA.h
 
 using namespace std;
 
