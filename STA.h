@@ -88,6 +88,7 @@ void STA :: Start()
 		system_stickiness = 0;
 		station_stickiness = 0;
 		hysteresis = 0;
+		//Set to 1 when trying maximum aggregation in mixed scenario. 0 Otherwise
 		fairShare = 0;
 	}else
 	{
