@@ -5,8 +5,6 @@
 #include <iostream>
 #include <fstream>
 
-//#include "/home/boris/RSoftware/sense31/code/common/cost.h"
-//#include "/home/boris/Dropbox/Boris/Research/Tools/SlottedCSMA/COST/cost.h"
 #include "./COST/cost.h"
 
 #include <deque>
@@ -15,15 +13,13 @@
 #include "STA.h"
 #include "BatchPoissonSource.h"
 #include "stats/stats.h"
-//#include "SatNode.h"
-//#include "SatNodeKenDuffy.h"
 
 using namespace std;
 
 component SlottedCSMA : public CostSimEng
 {
 	public:
-		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift,float percentageDCF, int simSeed);
+		void Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift,float percentageDCF, int maxAggregation, int simSeed);
 		void Stop();
 		void Start();		
 
@@ -45,7 +41,7 @@ component SlottedCSMA : public CostSimEng
 
 };
 
-void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, float percentageDCF, int simSeed)
+void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Bandwidth, int Batch, int Stickiness, int hysteresis, int fairShare, float channelErrors, float slotDrift, float percentageDCF, int maxAggregation, int simSeed)
 {
 	SimId = Sim_Id;
 	Nodes = NumNodes;
@@ -69,9 +65,9 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		intCut++;	
 	}
 		
-	cout << "Cut: " << (int)intCut << endl;
+	/*cout << "Cut: " << (int)intCut << endl;
 	cout << "Nodes: " << NumNodes << endl;
-	cout << "Percentage: " << percentageDCF << endl;
+	cout << "Percentage: " << percentageDCF << endl;*/
 	
 	
 	for(int n=0;n<NumNodes;n++)
@@ -85,6 +81,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
 		stas[n].cut = intCut;
+		stas[n].maxAggregation = maxAggregation;
 
 
 		// Traffic Source
@@ -220,8 +217,6 @@ void SlottedCSMA :: Stop()
 	
 	//802.11n version
 	overall_throughput = (channel.totalBitsSent)/SimTime();
-	
-	//overall_throughput = stats(overall_successful_tx, overall_empty, overall_collisions, PacketLength_);
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);
@@ -297,25 +292,56 @@ void SlottedCSMA :: Stop()
 
 int main(int argc, char *argv[])
 {
-	if(argc < 11) 
-	{
-		printf("./XXXX SimTime [10] NumNodes [10] PacketLength [1024] Bandwidth [65e6] Batch [1] Stickiness [0] hysteresis [0] fairShare [0] channelErrors [0] slotDrift [0] percentageOfDCF [1] simSeed [0]\n");
-		return 0;
-	}
+	int MaxSimIter;
+	double SimTime;
+	int NumNodes;
+	int PacketLength;
+	double Bandwidth;
+	int Batch;
+	int Stickiness;
+	int hysteresis;
+	int fairShare;
+	float channelErrors;
+	float slotDrift;
+	float percentageDCF;
+	int maxAggregation;
+	int simSeed;
 	
-	int MaxSimIter = 1;
-	double SimTime = atof(argv[1]);
-	int NumNodes = atoi(argv[2]);
-	int PacketLength = atoi(argv[3]);
-	double Bandwidth = atof(argv[4]);
-	int Batch = atoi(argv[5]); // =1
-	int Stickiness = atoi(argv[6]); // 0 = DCF, up to 2.
-	int hysteresis = atoi(argv[7]); //keep the current BO stage, until queue's empty
-	int fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
-	float channelErrors = atof(argv[9]); // float 0-1
-	float slotDrift = atof(argv[10]); // // float 0-1
-	float percentageDCF = atof(argv[11]); // // float 0-1
-	int simSeed = atof(argv[12]); //Simulation seed
+	if(argc < 12) 
+	{
+		cout << "Executed with default values shown below" << endl;
+		cout << "./XXXX SimTime [10] NumNodes [10] PacketLength [1024] Bandwidth [65e6] Batch [1] Stickiness [0] hysteresis [0] fairShare [0] channelErrors [0] slotDrift [0] percentageOfDCF [1] maxAggregation [0] simSeed [0]" << endl;
+		MaxSimIter = 1;
+		SimTime = 10;
+		NumNodes = 10;
+		PacketLength = 1024;
+		Bandwidth = 65e6;
+		Batch = 1; // =1
+		Stickiness = 0; // 0 = DCF, up to 2.
+		hysteresis = 0; //keep the current BO stage, until queue's empty
+		fairShare = 0; //0 = DCF, 1 = CSMA-ECA
+		channelErrors = 0; // float 0-1
+		slotDrift = 0; // // float 0-1
+		percentageDCF = 1; // // float 0-1
+		maxAggregation = 0;
+		simSeed = 0; //Simulation seed
+	}else
+	{
+		MaxSimIter = 1;
+		SimTime = atof(argv[1]);
+		NumNodes = atoi(argv[2]);
+		PacketLength = atoi(argv[3]);
+		Bandwidth = atof(argv[4]);
+		Batch = atoi(argv[5]); // =1
+		Stickiness = atoi(argv[6]); // 0 = DCF, up to 2.
+		hysteresis = atoi(argv[7]); //keep the current BO stage, until queue's empty
+		fairShare = atoi(argv[8]); //0 = DCF, 1 = CSMA-ECA
+		channelErrors = atof(argv[9]); // float 0-1
+		slotDrift = atof(argv[10]); // // float 0-1
+		percentageDCF = atof(argv[11]); // // float 0-1
+		maxAggregation = atoi(argv[12]); //0 = no, 1 = yes
+		simSeed = atof(argv[13]); //Simulation seed
+	}
 
 
 	
@@ -341,7 +367,7 @@ int main(int argc, char *argv[])
 		cout << "####################### CSMA/CA #######################" << endl;
 	}
 	
-	if(percentageDCF > 0) cout << "####################### Mixed setup " << percentageDCF*100 << "% #######################" << endl;
+	if(percentageDCF > 0) cout << "####################### Mixed setup " << percentageDCF*100 << "% DCF #######################" << endl;
 		
 	SlottedCSMA test;
 
@@ -351,7 +377,7 @@ int main(int argc, char *argv[])
 		
 	test.StopTime(SimTime);
 
-	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, hysteresis, fairShare, channelErrors, slotDrift, percentageDCF, simSeed);
+	test.Setup(MaxSimIter,NumNodes,PacketLength,Bandwidth,Batch,Stickiness, hysteresis, fairShare, channelErrors, slotDrift, percentageDCF, maxAggregation, simSeed);
 	
 	test.Run();
 

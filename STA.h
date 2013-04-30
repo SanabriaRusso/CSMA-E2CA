@@ -56,6 +56,9 @@ component STA : public TypeII
         //Protocol picking
         int cut;
         int DCF;
+        
+        //aggregation settings
+        int maxAggregation;
 
     private:
         int backoff_counter;
@@ -83,13 +86,21 @@ void STA :: Start()
 {
 	if(node_id < cut)
 	{
-		cout << node_id << ": I am using DCF" << endl;
+		cout << node_id << ": I am using DCF";
 		DCF = 1;
 		system_stickiness = 0;
 		station_stickiness = 0;
 		hysteresis = 0;
 		//Set to 1 when trying maximum aggregation in mixed scenario. 0 Otherwise
-		fairShare = 0;
+		if(maxAggregation > 0)
+		{
+			fairShare = 1;
+			cout << " with maximum aggregation" << endl;
+		}else
+		{
+			fairShare = 0;
+			cout << " without aggregation" << endl;
+		}
 	}else
 	{
 		cout << node_id << ": I am not using DCF" << endl;
@@ -200,16 +211,24 @@ void STA :: in_slot(SLOT_notification &slot)
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
-                    successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-                    //successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
-                    
-                    //Deleting as many packets as the aggregation field in the sent packet structure
-                    for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
-                    //for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
-                    {
-                    	MAC_queue.DelFirstPacket();
-                    }
-
+                	if(maxAggregation > 0)
+                	{
+                		successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		//Deleting as many packets as maxAggregation
+                		for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                		{
+                			MAC_queue.DelFirstPacket();
+                    	}
+                	}else
+                	{
+                		successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		//Deleting as many packets as the aggregation field in the sent packet structure
+                		for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                		{
+                			MAC_queue.DelFirstPacket();
+                    	}
+                	}
+                
                 }else
                 {
                     successful_transmissions++;
@@ -280,17 +299,23 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(hysteresis == 0) backoff_stage = 0;
                     
                     //Removing as many packets as were supposed to be sent
-                    if(fairShare > 0)
-                    {
-                        for(int i = 0; i <= std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize()); i++)
-                        //for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
-                        {
-                            MAC_queue.DelFirstPacket();
-                        }
-                    }else
-                    {
-                        MAC_queue.DelFirstPacket();
-                    }
+                    if(maxAggregation > 0)
+                	{
+                		successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		//Deleting as many packets as maxAggregation
+                		for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                		{
+                			MAC_queue.DelFirstPacket();
+                    	}
+                	}else
+                	{
+                		successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		//Deleting as many packets as the aggregation field in the sent packet structure
+                		for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                		{
+                			MAC_queue.DelFirstPacket();
+                    	}
+                	}
                     packet = MAC_queue.GetFirstPacket();
                     packet.send_time = SimTime();
                     
@@ -325,8 +350,13 @@ void STA :: in_slot(SLOT_notification &slot)
         total_transmissions++;
         if(fairShare > 0)
         {
-            packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-            //packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+        	if(maxAggregation > 0)
+        	{
+        		packet.aggregation = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+        	}else
+        	{
+        		packet.aggregation = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+        	}
         }else
         {
             packet.aggregation = 1;
