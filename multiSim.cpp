@@ -33,6 +33,7 @@ int main()
     float error = 0.0;
     float drift = 0.0;
     float DCF = 0.0; //0-100
+    int maxAggregation = 0; //[0,1]
     
     //For the statistics file
     //int statsLength = 0;
@@ -64,13 +65,15 @@ int main()
     cin >> drift;
     cout << "Percentage of nodes executing DCF (%)" << endl;
     cin >> DCF;
+    cout << "Maximum Aggregation? (0=no, 1=yes)" << endl;
+    cin >> maxAggregation;
     
     for(int i = n_min; i <= n_max; i++)
     {
         for(int j = 0; j < N; j++)
         {
             //execute script   
-            command << "./Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << j << endl;
+            command << "./Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;

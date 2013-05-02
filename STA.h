@@ -184,7 +184,7 @@ void STA :: Stop()
     	cout << "The queue emptied this time" << endl;
     }else
     {
-    	cout << "Queue was always filled" << endl;
+    	cout << "Queue was always full" << endl;
     }
     
 };
