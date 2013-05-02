@@ -51,6 +51,7 @@ component STA : public TypeII
         
         //temporal statistics
         int finalBackoffStage;
+        int qEmpty;
         //
         
         //Protocol picking
@@ -135,6 +136,7 @@ void STA :: Start()
     
     //statistics
     finalBackoffStage = 0;
+    qEmpty = 0;
     //
 };
 
@@ -175,7 +177,14 @@ void STA :: Stop()
     cout << "Station stickiness: " << station_stickiness << endl;
     cout << "Hysteresis: " << hysteresis << endl;
     cout << "Fair Share: " << fairShare << endl;
-    cout << "Total packets delivered: " << successful_transmissions << endl;
+    if(qEmpty == 1)
+    {
+    	cout << "The queue emptied this time" << endl;
+    }else
+    {
+    	cout << "Queue was always filled" << endl;
+    }
+    
 };
 
 void STA :: in_slot(SLOT_notification &slot)
@@ -251,6 +260,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     backlogged = 0;
                     backoff_stage = 0;
+                    qEmpty = 1;
                 }else
                 {
                     packet = MAC_queue.GetFirstPacket();
