@@ -309,22 +309,31 @@ int main(int argc, char *argv[])
 	
 	if(argc < 12) 
 	{
-		cout << "Executed with default values shown below" << endl;
-		cout << "./XXXX SimTime [10] NumNodes [10] PacketLength [1024] Bandwidth [65e6] Batch [1] Stickiness [0] hysteresis [0] fairShare [0] channelErrors [0] slotDrift [0] percentageOfDCF [1] maxAggregation [0] simSeed [0]" << endl;
-		MaxSimIter = 1;
-		SimTime = 10;
-		NumNodes = 10;
-		PacketLength = 1024;
-		Bandwidth = 65e6;
-		Batch = 1; // =1
-		Stickiness = 0; // 0 = DCF, up to 2.
-		hysteresis = 0; //keep the current BO stage, until queue's empty
-		fairShare = 0; //0 = DCF, 1 = CSMA-ECA
-		channelErrors = 0; // float 0-1
-		slotDrift = 0; // // float 0-1
-		percentageDCF = 1; // // float 0-1
-		maxAggregation = 0;
-		simSeed = 0; //Simulation seed
+		string word = argv[1];
+		string help ("--help");
+		string helpShort ("-h");
+		if((word.compare(help) == 0) || (word.compare(helpShort) == 0)){
+			cout << "./XXXX SimTime NumNodes PacketLength Bandwidth Batch Stickiness hysteresis fairShare channelErrors slotDrift percentageOfDCF maxAggregation simSeed" << endl;
+			return(0);
+		}else
+		{
+			cout << "Executed with default values shown below" << endl;
+			cout << "./XXXX SimTime [10] NumNodes [10] PacketLength [1024] Bandwidth [65e6] Batch [1] Stickiness [0] hysteresis [0] fairShare [0] channelErrors [0] slotDrift [0] percentageOfDCF [1] maxAggregation [0] simSeed [0]" << endl;
+			MaxSimIter = 1;
+			SimTime = 10;
+			NumNodes = 10;
+			PacketLength = 1024;
+			Bandwidth = 65e6;
+			Batch = 1; // =1
+			Stickiness = 0; // 0 = DCF, up to 2.
+			hysteresis = 0; //keep the current BO stage, until queue's empty
+			fairShare = 0; //0 = DCF, 1 = CSMA-ECA
+			channelErrors = 0; // float 0-1
+			slotDrift = 0; // // float 0-1
+			percentageDCF = 1; // // float 0-1
+			maxAggregation = 0;
+			simSeed = 0; //Simulation seed
+		}
 	}else
 	{
 		MaxSimIter = 1;
@@ -343,9 +352,6 @@ int main(int argc, char *argv[])
 		simSeed = atof(argv[13]); //Simulation seed
 	}
 
-
-	
-	
 	printf("####################### Simulation (%d) #######################\n",MaxSimIter);
 	if(Stickiness > 0)
 	{
