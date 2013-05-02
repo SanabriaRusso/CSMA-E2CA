@@ -8,6 +8,7 @@ struct Packet
 	int L;
 	int seq;
 	double send_time; //time at which a packet is picked from the MAC queue
+	double queuing_time; //time at which the packet is deposited at end of the queue
 	int aggregation; //used whenever fairShare is activated
 };
 

@@ -36,6 +36,7 @@ component STA : public TypeII
         long int collisions;
         long int total_transmissions;
         long int successful_transmissions;
+        long int packetDisposal;
         long int driftedSlots;
 
         long int incoming_packets;
@@ -120,6 +121,7 @@ void STA :: Start()
     txAttempt = 0;
     collisions = 0;
     successful_transmissions = 0;
+    packetDisposal = 0;
     total_transmissions = 0;
 
     incoming_packets = 0;
@@ -145,7 +147,7 @@ void STA :: Stop()
     
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
     
-    staDelay = (float)txDelay / (float)non_blocked_packets;
+    staDelay = (float)txDelay / (float)successful_transmissions;
     
     //temporal statistics
     finalBackoffStage = backoff_stage;
@@ -160,7 +162,7 @@ void STA :: Stop()
     cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
     cout << "Throughput of this station = " << throughput << "bps" << endl;
     cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
-    cout << "Delay (queueing + service) = " << staDelay << endl;
+    cout << "Average Delay (queueing + service) = " << staDelay << endl;
     cout << endl;
     
     cout <<"-----Debug-----"<<endl;
@@ -223,33 +225,44 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                 	if(maxAggregation > 0)
                 	{
-                		successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		successful_transmissions += packetDisposal;
+                		//cout << "Sent: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as maxAggregation
-                		for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                		for(int i = 0; i < packetDisposal; i++)
                 		{
+                			txDelay += SimTime() - packet.queuing_time;
+                			//cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
                 			MAC_queue.DelFirstPacket();
+                			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}else
                 	{
-                		successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		successful_transmissions += packetDisposal;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
-                		for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                		for(int i = 0; i < packetDisposal; i++)
                 		{
+                			txDelay += SimTime() - packet.queuing_time;
+                			//cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
                 			MAC_queue.DelFirstPacket();
+                			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}
                 
                 }else
                 {
                     successful_transmissions++;
+                    //cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
+                    txDelay += SimTime() - packet.queuing_time;
                     MAC_queue.DelFirstPacket();
                 }
+                
+                packetDisposal = 0;
 
                 txAttempt = 0;
                 
                 if(hysteresis == 0) backoff_stage = 0;
-                
-                txDelay += SimTime() - packet.send_time;
                 
                 //After successful tx, the sta_st goes back to sys_st
                 station_stickiness = system_stickiness;
@@ -312,19 +325,19 @@ void STA :: in_slot(SLOT_notification &slot)
                     //Removing as many packets as were supposed to be sent
                     if(maxAggregation > 0)
                 	{
-                		successful_transmissions+=std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
-                		//Deleting as many packets as maxAggregation
-                		for(int i = 0; i <= std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize()); i++)
+                		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		for(int i = 0; i <= packetDisposal -1; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
+                			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}else
                 	{
-                		successful_transmissions+=std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-                		//Deleting as many packets as the aggregation field in the sent packet structure
-                		for(int i = 0; i <= std::min((int)pow(2,backoff_stage), MAC_queue.QueueSize()); i++)
+                		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		for(int i = 0; i <= packetDisposal -1; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
+                			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}
                     packet = MAC_queue.GetFirstPacket();
@@ -385,6 +398,7 @@ void STA :: in_packet(Packet &packet)
     if (MAC_queue.QueueSize() < K)
     {
         non_blocked_packets++;
+        packet.queuing_time = SimTime();
         MAC_queue.PutPacket(packet);
     }else
     {
