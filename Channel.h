@@ -66,7 +66,6 @@ component Channel : public TypeII
 	public: // Statistics
 		double collision_slots, empty_slots, succesful_slots, total_slots;
 		double totalBitsSent;
-		double aMPDU; //the same as aggregation
 		long long int test;
 };
 
@@ -112,6 +111,8 @@ void Channel :: Stop()
 	printf("\n\n");
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
+	printf("Total packets sent to the Channel: %d", (int)succesful_slots);
+	printf("\n\n");
 	
 	slotsInTime.close();
 };
@@ -161,8 +162,8 @@ void Channel :: EndReceptionTime(trigger_t &)
 	if(number_of_transmissions_in_current_slot == 1)
 	{
 		slot_time.Set(SimTime()+succ_tx_duration);
-		succesful_slots ++;
-		totalBitsSent += aMPDU*(L_max*8);
+		succesful_slots++;
+		totalBitsSent += aggregation*(L_max*8);
 	}
 	if(number_of_transmissions_in_current_slot > 1)
 	{
@@ -190,7 +191,6 @@ void Channel :: in_packet(Packet &packet)
 	if(packet.L > L_max) L_max = packet.L;
 	
 	aggregation = packet.aggregation;
-	aMPDU = aggregation;
 	
 	errorProbability = rand() % 100 + 1;
 	

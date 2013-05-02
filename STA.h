@@ -174,7 +174,8 @@ void STA :: Stop()
     cout << "System stickiness: " << system_stickiness << endl;
     cout << "Station stickiness: " << station_stickiness << endl;
     cout << "Hysteresis: " << hysteresis << endl;
-    cout << "Fair Share: " << fairShare << endl << endl;
+    cout << "Fair Share: " << fairShare << endl;
+    cout << "Total packets delivered: " << successful_transmissions << endl;
 };
 
 void STA :: in_slot(SLOT_notification &slot)
@@ -344,8 +345,8 @@ void STA :: in_slot(SLOT_notification &slot)
         
     }
     
-    //transmit if backoff counter reaches zero
-    if (backoff_counter == 0)
+    //transmit if backoff counter reaches zero and the station is backlogged
+    if ((backoff_counter == 0) && (backlogged == 1))
     {
         total_transmissions++;
         if(fairShare > 0)

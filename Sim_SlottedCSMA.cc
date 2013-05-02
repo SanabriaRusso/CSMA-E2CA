@@ -264,7 +264,7 @@ void SlottedCSMA :: Stop()
 	    cout << "They differ by: " << fabs(total_slots - (overall_successful_tx_slots+overall_collisions+overall_empty)) << endl;    
 	}else
 	{
-	    cout << "They are equal" << endl;
+	    cout << "Total Slots = Sucessful + Collision + Empty" << endl;
 	}
 	
 	cout << "Total bits sent: " << channel.totalBitsSent << " if divided by " << SimTime() << "seconds of simulation, equals = " << (channel.totalBitsSent)/SimTime() << endl << endl;
