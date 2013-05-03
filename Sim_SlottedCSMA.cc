@@ -172,6 +172,7 @@ void SlottedCSMA :: Stop()
 	
 	//temporal statistics
 	avgBackoffStage /= Nodes;
+	cout << endl;
 	
 	//Computing the standard deviation of each of the station's tau
 	//Also capturing each station's throughput to build the Jain's index
@@ -181,6 +182,7 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
+	    //if(stas[i].qEmpty > 1)cout << "Station: " << i << " emptied the queue " << stas[i].qEmpty << " times" << endl;
 	    
 	    //Separating the collection of throughput of DCF and ECA stations
 	    if(stas[i].DCF > 0)

@@ -36,6 +36,7 @@ component STA : public TypeII
         long int collisions;
         long int total_transmissions;
         long int successful_transmissions;
+        long int droppedPackets; //due to retransmissions
         long int packetDisposal;
         long int driftedSlots;
 
@@ -53,6 +54,7 @@ component STA : public TypeII
         //temporal statistics
         int finalBackoffStage;
         int qEmpty;
+        int qSize;
         //
         
         //Protocol picking
@@ -121,6 +123,7 @@ void STA :: Start()
     txAttempt = 0;
     collisions = 0;
     successful_transmissions = 0;
+    droppedPackets = 0;
     packetDisposal = 0;
     total_transmissions = 0;
 
@@ -146,6 +149,7 @@ void STA :: Stop()
 {
     
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
+    qSize = MAC_queue.QueueSize();
     
     staDelay = (float)txDelay / (float)successful_transmissions;
     
@@ -179,7 +183,7 @@ void STA :: Stop()
     cout << "Station stickiness: " << station_stickiness << endl;
     cout << "Hysteresis: " << hysteresis << endl;
     cout << "Fair Share: " << fairShare << endl;
-    if(qEmpty == 1)
+    if(qEmpty > 1)
     {
     	cout << "The queue emptied this time" << endl;
     }else
@@ -249,7 +253,6 @@ void STA :: in_slot(SLOT_notification &slot)
                 			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}
-                
                 }else
                 {
                     successful_transmissions++;
@@ -273,7 +276,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     backlogged = 0;
                     backoff_stage = 0;
-                    qEmpty = 1;
+                    qEmpty++;
                 }else
                 {
                     packet = MAC_queue.GetFirstPacket();
@@ -326,6 +329,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(maxAggregation > 0)
                 	{
                 		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                		droppedPackets+=packetDisposal;
                 		for(int i = 0; i <= packetDisposal -1; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
@@ -334,14 +338,18 @@ void STA :: in_slot(SLOT_notification &slot)
                 	}else
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		droppedPackets+=packetDisposal;
                 		for(int i = 0; i <= packetDisposal -1; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
                     	}
                 	}
+                	droppedPackets++;
+                	MAC_queue.DelFirstPacket();
                     packet = MAC_queue.GetFirstPacket();
                     packet.send_time = SimTime();
+                    packetDisposal = 0;
                     
                     //Setting the new backoff_counter
                     backoff_counter = backoff(backoff_stage + 1, station_stickiness, driftProbability);
