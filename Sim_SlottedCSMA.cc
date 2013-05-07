@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
 		simSeed = atof(argv[13]); //Simulation seed
 	}
 
-	printf("####################### Simulation (%d) #######################\n",MaxSimIter);
+	printf("####################### Simulation (Seed: %d) #######################\n",simSeed);
 	if(Stickiness > 0)
 	{
 		if(hysteresis > 0)

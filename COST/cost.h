@@ -127,9 +127,11 @@ class CostSimEng
   void		ScheduleEvent(CostEvent*e)
       {
 	if( e->time < m_clock)
+	{
+	  printf("scheduled event-> time: %f, object: %p, m_clock: %f\n",e->time,e->object,m_clock);
 	  assert(e->time>=m_clock);
-        //printf("scheduled event-> time: %f, object: %p\n",e->time,e->object);
-        m_queue.EnQueue(e);
+	}
+	m_queue.EnQueue(e);
       }
   void		CancelEvent(CostEvent*e)
       {

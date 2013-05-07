@@ -196,6 +196,7 @@ void STA :: Stop()
 void STA :: in_slot(SLOT_notification &slot)
 {
     observed_slots++;
+    cout << "Sta: " << node_id << " Backoff counter: " << backoff_counter << " qSize: " << MAC_queue.QueueSize() << endl;
 
     if (node_id == 0)
     {
@@ -231,7 +232,6 @@ void STA :: in_slot(SLOT_notification &slot)
                 	{
                 		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                 		successful_transmissions += packetDisposal;
-                		//cout << "Sent: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as maxAggregation
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
@@ -330,7 +330,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 	{
                 		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                 		droppedPackets+=packetDisposal;
-                		for(int i = 0; i <= packetDisposal -1; i++)
+                		for(int i = 0; i < packetDisposal; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
@@ -339,7 +339,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                 		droppedPackets+=packetDisposal;
-                		for(int i = 0; i <= packetDisposal -1; i++)
+                		for(int i = 0; i <= packetDisposal; i++)
                 		{
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();

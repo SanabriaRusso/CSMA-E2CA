@@ -30,6 +30,7 @@ template <class DATATYPE> DATATYPE FIFO <DATATYPE> :: GetFirstPacket()
 
 template <class DATATYPE> void FIFO <DATATYPE> :: DelFirstPacket()
 {
+	if(m_queue.size() == 0) printf("Attempting to erase an empty queue\n");
 	m_queue.pop_front();
 }; 
 
