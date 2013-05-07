@@ -376,7 +376,7 @@ void STA :: in_slot(SLOT_notification &slot)
     }
     
     //transmit if backoff counter reaches zero and the station has something in the queue
-    if ((backoff_counter == 0) && (MAC_queue.QueueSize() > packetDisposal))
+    if ((backoff_counter == 0) && (MAC_queue.QueueSize() >= packetDisposal))
     {
         total_transmissions++;
         if(fairShare > 0)
