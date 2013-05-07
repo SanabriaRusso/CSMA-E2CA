@@ -196,7 +196,7 @@ void STA :: Stop()
 void STA :: in_slot(SLOT_notification &slot)
 {
     observed_slots++;
-    cout << "Sta: " << node_id << " Backoff counter: " << backoff_counter << " qSize: " << MAC_queue.QueueSize() << endl;
+    //cout << "Sta: " << node_id << " Backoff counter: " << backoff_counter << " qSize: " << MAC_queue.QueueSize() << endl;
 
     if (node_id == 0)
     {
@@ -363,7 +363,6 @@ void STA :: in_slot(SLOT_notification &slot)
         }
 
     }
-
     //stations that are not backlogged will wait for a packet
     if (backlogged == 0)
     {
@@ -376,8 +375,8 @@ void STA :: in_slot(SLOT_notification &slot)
         
     }
     
-    //transmit if backoff counter reaches zero and the station is backlogged
-    if ((backoff_counter == 0) && (backlogged == 1))
+    //transmit if backoff counter reaches zero and the station has something in the queue
+    if ((backoff_counter == 0) && (MAC_queue.QueueSize() > packetDisposal))
     {
         total_transmissions++;
         if(fairShare > 0)

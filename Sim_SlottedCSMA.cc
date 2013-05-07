@@ -152,12 +152,8 @@ void SlottedCSMA :: Stop()
 	    avg_tau += ((float)stas[n].total_transmissions / (float)stas[n].observed_slots);
 	    driftedSlots += stas[n].driftedSlots;
 	    tx_slots += stas[n].total_transmissions;
-	    
 	    overall_successful_tx+=stas[n].successful_transmissions;
-	    
-	    //temporal statistics
 	    avgBackoffStage += stas[n].finalBackoffStage;
-	    //
 	}
 	overall_collisions = channel.collision_slots;
 	overall_empty = channel.empty_slots;
@@ -198,6 +194,10 @@ void SlottedCSMA :: Stop()
 	    }
 	    accumThroughputDCF += stas_throughputDCF[i];
 	    accumThroughputECA += stas_throughputECA[i];
+	    
+	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
+	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize) cout << "Station " << i << ": is alright" << endl;
+	    
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
