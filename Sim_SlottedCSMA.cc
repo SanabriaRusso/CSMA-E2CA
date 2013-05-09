@@ -196,12 +196,12 @@ void SlottedCSMA :: Stop()
 	    accumThroughputECA += stas_throughputECA[i];
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
-	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize)
+	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
 	    {	
 	    	cout << "Station " << i << ": is alright" << endl;
 	    }else
 	    {
-	    	cout << "Station " << i << ": differs in " << stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize) << endl;
+	    	cout << "Station " << i << ": differs in " << stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets) << endl;
 	    }
 	}
 	

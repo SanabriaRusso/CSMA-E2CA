@@ -196,21 +196,6 @@ void STA :: Stop()
 void STA :: in_slot(SLOT_notification &slot)
 {
     observed_slots++;
-    //cout << "Sta: " << node_id << " Backoff counter: " << backoff_counter << " qSize: " << MAC_queue.QueueSize() << endl;
-
-    if (node_id == 0)
-    {
-        //cout << "Drift: " << driftProbability << endl;
-    }
-
-    if (backlogged)
-    {     
-        //printf("%d,%d,%d\t", node_id, backoff_counter,MAC_queue.QueueSize());
-    }else
-    {
-       //printf("%d,*,%d\t", node_id,MAC_queue.QueueSize());
-    }
-
     //stations that are backlogged will decrement backoff, transmit,
     //and check the result of the last transmission
 
@@ -249,12 +234,11 @@ void STA :: in_slot(SLOT_notification &slot)
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
                 			txDelay += SimTime() - packet.queuing_time;
-                			//cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
-                			//cout << node_id << " delete: " << i << endl;
                     	}
                 	}
+                	packetDisposal = 0;
                 }else
                 {
                     successful_transmissions++;
@@ -263,16 +247,12 @@ void STA :: in_slot(SLOT_notification &slot)
                     MAC_queue.DelFirstPacket();
                 }
                 
-                packetDisposal = 0;
-
                 txAttempt = 0;
                 
                 if(hysteresis == 0) backoff_stage = 0;
                 
                 //After successful tx, the sta_st goes back to sys_st
                 station_stickiness = system_stickiness;
-                
-                backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                
                 if (MAC_queue.QueueSize() == 0)
                 {
@@ -283,9 +263,9 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     packet = MAC_queue.GetFirstPacket();
                     packet.send_time = SimTime();
+                    backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
-            }
-            else
+            }else
             {
                 //Other stations transmitted
                 //Decrement backoff_counter
@@ -341,11 +321,9 @@ void STA :: in_slot(SLOT_notification &slot)
                     	{
                     		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                     		droppedPackets+=packetDisposal;
-                    		cout << node_id << " disposal ret: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                     		for(int i = 0; i < packetDisposal; i++)
                     		{
                     			MAC_queue.DelFirstPacket();
-                    			cout << node_id << " delete: " << i << endl;
                     		}
                     	}
                     	packetDisposal = 0;
@@ -353,10 +331,15 @@ void STA :: in_slot(SLOT_notification &slot)
                     {
                     	droppedPackets++;
                     	MAC_queue.DelFirstPacket();
-                    	packet = MAC_queue.GetFirstPacket();
-                    	packet.send_time = SimTime();
-                    	//Setting the new backoff_counter
-                 	 	backoff_counter = backoff(backoff_stage + 1, station_stickiness, driftProbability);
+                 	}
+                 	
+                 	if(MAC_queue.QueueSize() > 0)
+                 	{
+                 		packet = MAC_queue.GetFirstPacket();
+                 		packet.send_time = SimTime();
+                 	}else
+                 	{
+                 		backlogged = 0;
                  	}
                 }
             }
