@@ -244,6 +244,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                 		successful_transmissions += packetDisposal;
+                		//cout << node_id << " disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
@@ -251,6 +252,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 			//cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
+                			//cout << node_id << " delete: " << i << endl;
                     	}
                 	}
                 }else
@@ -326,33 +328,36 @@ void STA :: in_slot(SLOT_notification &slot)
                     if(hysteresis == 0) backoff_stage = 0;
                     
                     //Removing as many packets as were supposed to be sent
-                    if(maxAggregation > 0)
-                	{
-                		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
-                		droppedPackets+=packetDisposal;
-                		for(int i = 0; i < packetDisposal; i++)
-                		{
-                			MAC_queue.DelFirstPacket();
-                			packet = MAC_queue.GetFirstPacket();
+                    if(fairShare > 0){
+                    	if(maxAggregation > 0)
+                    	{
+                    		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                    		droppedPackets+=packetDisposal;
+                    		for(int i = 0; i < packetDisposal; i++)
+                    		{
+                    			MAC_queue.DelFirstPacket();
+                    		}
+                    	}else
+                    	{
+                    		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                    		droppedPackets+=packetDisposal;
+                    		cout << node_id << " disposal ret: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
+                    		for(int i = 0; i < packetDisposal; i++)
+                    		{
+                    			MAC_queue.DelFirstPacket();
+                    			cout << node_id << " delete: " << i << endl;
+                    		}
                     	}
-                	}else
-                	{
-                		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-                		droppedPackets+=packetDisposal;
-                		for(int i = 0; i <= packetDisposal; i++)
-                		{
-                			MAC_queue.DelFirstPacket();
-                			packet = MAC_queue.GetFirstPacket();
-                    	}
-                	}
-                	droppedPackets++;
-                	MAC_queue.DelFirstPacket();
-                    packet = MAC_queue.GetFirstPacket();
-                    packet.send_time = SimTime();
-                    packetDisposal = 0;
-                    
-                    //Setting the new backoff_counter
-                    backoff_counter = backoff(backoff_stage + 1, station_stickiness, driftProbability);
+                    	packetDisposal = 0;
+                    }else
+                    {
+                    	droppedPackets++;
+                    	MAC_queue.DelFirstPacket();
+                    	packet = MAC_queue.GetFirstPacket();
+                    	packet.send_time = SimTime();
+                    	//Setting the new backoff_counter
+                 	 	backoff_counter = backoff(backoff_stage + 1, station_stickiness, driftProbability);
+                 	}
                 }
             }
             else
@@ -376,7 +381,7 @@ void STA :: in_slot(SLOT_notification &slot)
     }
     
     //transmit if backoff counter reaches zero and the station has something in the queue
-    if ((backoff_counter == 0) && (MAC_queue.QueueSize() >= packetDisposal))
+    if ((backoff_counter == 0) && (backlogged == 1))
     {
         total_transmissions++;
         if(fairShare > 0)
