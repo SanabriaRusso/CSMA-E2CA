@@ -145,6 +145,7 @@ void SlottedCSMA :: Stop()
 	
 	//temporal statistics
 	float avgBackoffStage = 0;
+	float avgDroppedPackets = 0;
 	//
 	
 	for(int n=0;n<Nodes;n++)
@@ -194,6 +195,7 @@ void SlottedCSMA :: Stop()
 	    }
 	    accumThroughputDCF += stas_throughputDCF[i];
 	    accumThroughputECA += stas_throughputECA[i];
+	    avgDroppedPackets += stas[i].droppedPackets;
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
 	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
@@ -261,6 +263,7 @@ void SlottedCSMA :: Stop()
 	
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
+	cout << "Average number of dropped packets: " << avgDroppedPackets/Nodes << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;

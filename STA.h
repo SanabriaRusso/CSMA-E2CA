@@ -90,7 +90,7 @@ void STA :: Start()
 {
 	if(node_id < cut)
 	{
-		cout << node_id << ": I am using DCF";
+		//cout << node_id << ": I am using DCF";
 		DCF = 1;
 		system_stickiness = 0;
 		station_stickiness = 0;
@@ -99,15 +99,15 @@ void STA :: Start()
 		if(maxAggregation > 0)
 		{
 			fairShare = 1;
-			cout << " with maximum aggregation" << endl;
+			//cout << " with maximum aggregation" << endl;
 		}else
 		{
 			fairShare = 0;
-			cout << " without aggregation" << endl;
+			//cout << " without aggregation" << endl;
 		}
 	}else
 	{
-		cout << node_id << ": I am not using DCF" << endl;
+		//cout << node_id << ": I am not using DCF" << endl;
 		DCF = 0;
 	}
 	
@@ -225,11 +225,12 @@ void STA :: in_slot(SLOT_notification &slot)
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
                     	}
+                    	txDelay += SimTime() - packet.queuing_time; //adding the delay of the last packet. It is erased later.
                 	}else
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                 		successful_transmissions += packetDisposal;
-                		//cout << node_id << " disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
+                		//if(node_id==0)cout << "Disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
@@ -237,12 +238,14 @@ void STA :: in_slot(SLOT_notification &slot)
                 			MAC_queue.DelFirstPacket();
                 			packet = MAC_queue.GetFirstPacket();
                     	}
+                    	txDelay += SimTime() - packet.queuing_time; //adding the delay of the last packet. It is erased later.
                 	}
                 	packetDisposal = 0;
                 }else
                 {
                     successful_transmissions++;
-                    //cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
+                    //if(node_id==0)cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
+                    //if(node_id==0)cout << "Average Delay += " << SimTime() - packet.queuing_time << endl;
                     txDelay += SimTime() - packet.queuing_time;
                     MAC_queue.DelFirstPacket();
                 }
@@ -261,7 +264,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     qEmpty++;
                 }else
                 {
-                    packet = MAC_queue.GetFirstPacket();
+                    packet = MAC_queue.GetFirstPacket(); //any previously packet in the variable is replaced by a new one
                     packet.send_time = SimTime();
                     backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
