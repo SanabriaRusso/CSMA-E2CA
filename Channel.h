@@ -120,7 +120,7 @@ void Channel :: Stop()
 void Channel :: Sampler(trigger_t &)
 {
     //Statistics for the evolution of Cp
-    /*
+    
 	if(total_slots) 
 	{
 	    slotsInTime << SimTime() << " " << collision_slots/total_slots << endl;
@@ -131,7 +131,6 @@ void Channel :: Sampler(trigger_t &)
 	}
 	
 	cpSampler.Set(SimTime() + 1);
-	*/
 }
 
 void Channel :: NewSlot(trigger_t &)

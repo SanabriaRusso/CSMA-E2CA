@@ -151,7 +151,13 @@ void STA :: Stop()
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
     qSize = MAC_queue.QueueSize();
     
-    staDelay = (float)txDelay / (float)successful_transmissions;
+    if(successful_transmissions > 0)
+    {
+    	staDelay = (float)txDelay / successful_transmissions;
+    }else
+    {
+    	staDelay = 0;
+    }
     
     //temporal statistics
     finalBackoffStage = backoff_stage;
@@ -160,14 +166,17 @@ void STA :: Stop()
     cout << endl;
     cout << "--- Station " << node_id << " stats ---" << endl;
     cout << "Total Transmissions:" << " " <<  total_transmissions << endl;
-    cout << "Collisions:" << " " << collisions << endl;
-    cout << "Packets successfully sent:" << " " << successful_transmissions << endl;        
-    cout << "*** DETAILED ***" << endl;
-    cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
-    cout << "Throughput of this station = " << throughput << "bps" << endl;
-    cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
-    cout << "Average Delay (queueing + service) = " << staDelay << endl;
-    cout << endl;
+    if(total_transmissions > 0)
+    {
+    	cout << "Collisions:" << " " << collisions << endl;
+    	cout << "Packets successfully sent:" << " " << successful_transmissions << endl;        
+    	cout << "*** DETAILED ***" << endl;
+    	cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
+    	cout << "Throughput of this station = " << throughput << "bps" << endl;
+    	cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
+    	cout << "Average Delay (queueing + service) = " << staDelay << endl;
+    	cout << endl;
+    }
     
     cout <<"-----Debug-----"<<endl;
     if(DCF == 1)
