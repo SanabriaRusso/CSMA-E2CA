@@ -153,7 +153,7 @@ void STA :: Stop()
     
     if(successful_transmissions > 0)
     {
-    	staDelay = (float)txDelay / successful_transmissions;
+    	staDelay = (float)txDelay / (float)successful_transmissions;
     }else
     {
     	staDelay = 0;
@@ -230,31 +230,26 @@ void STA :: in_slot(SLOT_notification &slot)
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
                 			txDelay += SimTime() - packet.queuing_time;
-                			//cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
                 			MAC_queue.DelFirstPacket();
-                			packet = MAC_queue.GetFirstPacket();
+                			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
-                    	txDelay += SimTime() - packet.queuing_time; //adding the delay of the last packet. It is erased later.
                 	}else
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                 		successful_transmissions += packetDisposal;
-                		//if(node_id==0)cout << "Disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
+                		//if(node_id==10)cout << "Disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
                 			txDelay += SimTime() - packet.queuing_time;
                 			MAC_queue.DelFirstPacket();
-                			packet = MAC_queue.GetFirstPacket();
+                			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
-                    	txDelay += SimTime() - packet.queuing_time; //adding the delay of the last packet. It is erased later.
                 	}
                 	packetDisposal = 0;
                 }else
                 {
                     successful_transmissions++;
-                    //if(node_id==0)cout << "Packet " << successful_transmissions << ": " << SimTime() - packet.queuing_time << " = " << SimTime() << " - " << packet.queuing_time << endl;
-                    //if(node_id==0)cout << "Average Delay += " << SimTime() - packet.queuing_time << endl;
                     txDelay += SimTime() - packet.queuing_time;
                     MAC_queue.DelFirstPacket();
                 }
