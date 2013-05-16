@@ -179,7 +179,7 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
-	    cout << i << " " << stas[i].staDelay << endl;
+	    //cout << i << " " << stas[i].staDelay << endl;
 	    //if(stas[i].qEmpty > 1)cout << "Station: " << i << " emptied the queue " << stas[i].qEmpty << " times" << endl;
 	    
 	    //Separating the collection of throughput of DCF and ECA stations
