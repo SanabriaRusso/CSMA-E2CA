@@ -47,6 +47,7 @@ component STA : public TypeII
         double txDelay;
         double throughput;
         double staDelay; //overall station's delay
+        double blockingProbability;
         
         float slotDrift;
         float driftProbability; //system slot drift probability
@@ -130,6 +131,7 @@ void STA :: Start()
     incoming_packets = 0;
     non_blocked_packets = 0;
     blocked_packets = 0;
+    blockingProbability = 0;
 
     txDelay = 0;
     
@@ -150,6 +152,8 @@ void STA :: Stop()
     
     throughput = packet.L*8*(float)successful_transmissions / SimTime();
     qSize = MAC_queue.QueueSize();
+    
+    blockingProbability = (float)blocked_packets / (float)incoming_packets;
     
     if(successful_transmissions > 0)
     {
@@ -173,7 +177,7 @@ void STA :: Stop()
     	cout << "*** DETAILED ***" << endl;
     	cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
     	cout << "Throughput of this station = " << throughput << "bps" << endl;
-    	cout << "Blocking Probability = " << (float)blocked_packets / (float)incoming_packets << endl;
+    	cout << "Blocking Probability = " << blockingProbability << endl;
     	cout << "Average Delay (queueing + service) = " << staDelay << endl;
     	cout << endl;
     }

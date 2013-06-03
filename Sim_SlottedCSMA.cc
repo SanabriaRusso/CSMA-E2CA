@@ -142,6 +142,7 @@ void SlottedCSMA :: Stop()
 	
 	double fairness_index = 0;
 	double systemTXDelay = 0.0;
+	double systemAvgBlockingProbability = 0;
 	
 	//temporal statistics
 	float avgBackoffStage = 0;
@@ -206,11 +207,16 @@ void SlottedCSMA :: Stop()
 	    {
 	    	cout << "Station " << i << ": differs in " << stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets) << endl;
 	    }
+	    
+	    //Gathering the average blocking probability
+	    systemAvgBlockingProbability += stas[i].blockingProbability;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
 	
 	systemTXDelay /= Nodes;
+	
+	systemAvgBlockingProbability /= Nodes;
 	
 	double fair_numerator, fair_denominator;
 	
@@ -243,7 +249,9 @@ void SlottedCSMA :: Stop()
 	}else
 	{
 	    statistics << accumThroughputECA;
-	}statistics << " " << fair_numerator << endl;
+	}statistics << " " << fair_numerator << " ";
+	
+	statistics << systemAvgBlockingProbability << " " << avgDroppedPackets/Nodes << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -266,6 +274,7 @@ void SlottedCSMA :: Stop()
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
 	cout << "Average number of dropped packets: " << avgDroppedPackets/Nodes << endl;
+	cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;
