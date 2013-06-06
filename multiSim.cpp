@@ -20,6 +20,11 @@ struct nodesAverage{
 	double sumDCFandECA;
 	double Pb; //Blocking probability
 	double dropped; //Dropped packets due retransmissions
+	double sx; //successful slots
+	double colSlots; //collision slots
+	double empty; //empty slots
+	double totalSlots;
+	double tau;
 };
 
 int main()
@@ -40,6 +45,7 @@ int main()
     //For the statistics file
     //int statsLength = 0;
     nodesAverage *meanCarrier;
+    nodesAverage **staMeanCarrier;
     
 
     stringstream command (stringstream::in | stringstream::out);
@@ -84,7 +90,7 @@ int main()
         }
     }
     
-    //Manipulating the statistics.txt file
+    //Manipulating the statistics file
     ifstream fin("Results/multiSim.txt");
     string line;
     meanCarrier = new nodesAverage[N];
@@ -99,7 +105,7 @@ int main()
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
-	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped" << endl;
+	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped 23.SxSlots 24.stdSxSlots 25.ColSlots 26.StdColSlots 27.EmptySlots 28.stdEmpty 29.totalSlots 30.stdTotalSlots 31.averageTAU 32.stdTAU" << endl;
     
     while(getline(inputFile,input))
     {
@@ -191,6 +197,41 @@ int main()
     		drop >> droppedPackets;
 	    	//cout << droppedPackets << endl;
     		meanCarrier[iterator].dropped = droppedPackets;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream sx(token);
+	    	double successSlots;
+    		sx >> successSlots;
+	    	//cout << successSlots << endl;
+    		meanCarrier[iterator].sx = successSlots;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream cS(token);
+	    	double colSlots;
+    		cS >> colSlots;
+	    	//cout << colSlots << endl;
+    		meanCarrier[iterator].colSlots = colSlots;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream empty(token);
+	    	double emptySlots;
+    		empty >> emptySlots;
+	    	//cout << emptySlots << endl;
+    		meanCarrier[iterator].empty = emptySlots;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream total(token);
+	    	double totalSlots;
+    		total >> totalSlots;
+	    	//cout << totalSlots << endl;
+    		meanCarrier[iterator].totalSlots = totalSlots;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream Pt(token);
+	    	double tau;
+    		Pt >> tau;
+	    	//cout << tau << endl;
+    		meanCarrier[iterator].tau = tau;
     	
     		iterator++;
     	}else
@@ -222,6 +263,16 @@ int main()
     		double stdPb = 0;
     		double avgDropped = 0;
     		double stdDropped = 0;
+    		double avgSxSlots = 0;
+    		double stdSxSlots = 0;
+    		double avgColSlots = 0;
+    		double stdColSlots = 0;
+    		double avgEmptySlots = 0;
+    		double stdEmptySlots = 0;
+    		double avgTotalSlots = 0;
+    		double stdTotalSlots = 0;
+    		double avgTau = 0;
+    		double stdTau = 0;
     		
     		
     		//Computing the averages
@@ -237,6 +288,11 @@ int main()
     			avgSumThroughput += (meanCarrier[i].sumDCFandECA);
     			avgPb += (meanCarrier[i].Pb);
     			avgDropped += (meanCarrier[i].dropped);
+    			avgSxSlots += (meanCarrier[i].sx);
+    			avgColSlots += (meanCarrier[i].colSlots);
+    			avgEmptySlots += (meanCarrier[i].empty);
+    			avgTotalSlots += (meanCarrier[i].totalSlots);
+    			avgTau += (meanCarrier[i].tau);
     		}
     		average = numerator/iterator;
     		avgJFI = numeratorJFI/iterator;
@@ -248,6 +304,13 @@ int main()
     		avgSumThroughput /= iterator;
     		avgPb /= iterator;
     		avgDropped /= iterator;
+    		avgSxSlots /= iterator;
+    		avgColSlots /= iterator;
+    		avgEmptySlots /= iterator;
+    		avgTotalSlots /= iterator;
+    		avgTau /= iterator;
+    		
+    		
     		
     		//Computing the standard deviation for the error bars
     		numeratorJFI = 0;
@@ -265,6 +328,11 @@ int main()
     				stdSumThroughput += pow((meanCarrier[j].sumDCFandECA) - avgSumThroughput,2);
     				stdPb += pow((meanCarrier[j].Pb) - avgPb,2);
     				stdDropped += pow((meanCarrier[j].dropped) - avgDropped,2);
+    				stdSxSlots += pow((meanCarrier[j].sx) - avgSxSlots,2);
+    				stdColSlots += pow((meanCarrier[j].colSlots) - avgColSlots,2);
+    				stdEmptySlots += pow((meanCarrier[j].empty) - avgEmptySlots,2);
+    				stdTotalSlots += pow((meanCarrier[j].totalSlots) - avgTotalSlots,2);
+    				stdTau += pow((meanCarrier[j].tau) - avgTau,2);
     			}
     		}
     		
@@ -278,13 +346,80 @@ int main()
     		stdSumThroughput = sqrt((1./(iterator))*stdSumThroughput);
     		stdPb = sqrt((1./(iterator))*stdPb);
     		stdDropped = sqrt((1./(iterator))*stdDropped);
+    		stdSxSlots = sqrt((1./(iterator))*stdSxSlots);
+    		stdColSlots = sqrt((1./(iterator))*stdColSlots);
+    		stdEmptySlots = sqrt((1./(iterator))*stdEmptySlots);
+    		stdTotalSlots = sqrt((1./(iterator))*stdTotalSlots);
+    		stdTau = sqrt((1./(iterator))*stdTau);
     		    		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << " " << avgSxSlots << " " << stdSxSlots << " " << avgColSlots << " " << stdColSlots << " " << avgEmptySlots << " " << stdEmptySlots << " " << avgTotalSlots << " " << stdTotalSlots << " " << avgTau << " " << stdTau << endl;
     		iterator = 0;
     		
     	}
     }//for the while statement
     
     multiAverage.close();
+    //---------------------------------
+    //Processing per nodes statistics
+    //When n_max-n_min=0
+    //---------------------------------
+    
+    //Manipulating the statistics file
+    if(n_max - n_min == 0)
+    {
+    	nodesAverage** staMeanCarrier = new nodesAverage*[n_max];
+    	for(int i = 0; i < N; i++)
+    	{
+    		staMeanCarrier[i] = new nodesAverage[N];
+    	}
+    
+    	ifstream staInputFile("Results/multiStation.txt");
+    
+		ofstream staMultiAverage;
+		staMultiAverage.open("Results/staMultiAverage.txt", ios::app);
+		staMultiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-avgPc 5-stdPc 6-avgTAU 7-stdTAU 8-avgDropped 9-stdDropped" << endl;
+    
+    	if(!staInputFile)
+    	{
+        	cout << "File could not be opened" << endl;
+    	}else
+    	{
+    		for(int r = 0; r < N ; r++)
+			{
+				for(int s = 0; s < n_max; s++)
+				{
+            		staInputFile >> staMeanCarrier[s][r].num >> staMeanCarrier[s][r].rate;
+            		//cout << staMeanCarrier[s][r].num << " " << staMeanCarrier[s][r].rate << endl;
+        		}
+        	}
+	    }
 
+		//Calculating the average and std
+		double avgRate = 0;
+		double stdRate = 0;
+		
+		for(int i = 0; i < n_max; i++)
+		{
+			for(int j = 0; j < N; j++)
+			{
+				avgRate += staMeanCarrier[i][j].rate;
+			}
+			
+			avgRate /= N;
+			
+			staMultiAverage << i << " " << avgRate << " ";
+			
+			//Calculating the STD
+			for(int j = 0; j < N; j++)
+			{
+				stdRate += pow((staMeanCarrier[i][j].rate) - avgRate,2);
+			}
+			stdRate = sqrt((1./(N))*stdRate);
+			staMultiAverage << stdRate << endl;
+			avgRate = 0;
+			stdRate = 0;
+		}
+
+    	staMultiAverage.close();
+    }
 }

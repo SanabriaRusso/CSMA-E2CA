@@ -51,7 +51,7 @@ component Channel : public TypeII
 		    connect cpSampler.to_component,Sampler; }
 
 	private:
-		int number_of_transmissions_in_current_slot;
+		double number_of_transmissions_in_current_slot;
 		double succ_tx_duration, collision_duration; // Depends on the packet(s) size(s)
 		double empty_slot_duration;
 		double L_max;
@@ -110,7 +110,7 @@ void Channel :: Stop()
 {
 	printf("\n\n");
 	printf("---- Channel ----\n");
-	printf("Slot Status Probabilities (channel point of view): Empty = %f, Succesful = %f, Collision = %f \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
+	printf("Slot Status Probabilities (channel point of view): Empty = %e, Succesful = %e, Collision = %e \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
 	printf("Total packets sent to the Channel: %d", (int)succesful_slots);
 	printf("\n\n");
 	
@@ -204,6 +204,7 @@ void Channel :: in_packet(Packet &packet)
 	}
 	
 	succ_tx_duration = 32e-06 + ceil((16 + aggregation*(32+(L_max*8)+288) + 6)/LDBPS)*TSYM + SIFS + TBack + DIFS + empty_slot_duration;
+	
 	collision_duration = succ_tx_duration;
 	
 	/*succ_tx_duration = ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + ((aggregation*L_max*8 + MAC_H)/DATARATE) + SIFS + ((PCLP_PREAMBLE + PCLP_HEADER)/PHYRATE) + (L_ack/PHYRATE) + DIFS;

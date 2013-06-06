@@ -4,6 +4,8 @@ Sim_SlottedCSMA
 *.cxx
 *.txt
 *.gp
+*.swp*
+Results/bugs/
 Results/multiSim/delay/old/
 Results/multiSim/old/
 Results/multiSim/slotsInTime/500rep/

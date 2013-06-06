@@ -80,7 +80,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;
-		stas[n].cut = intCut;
+		stas[n].cut = intCut;     
 		stas[n].maxAggregation = maxAggregation;
 
 
@@ -128,8 +128,8 @@ void SlottedCSMA :: Stop()
 	
 	
 
-	float avg_tau = 0;
-	float std_tau = 0;
+	double avg_tau = 0;
+	double std_tau = 0;
 	
 	double stas_throughput [Nodes];
 	double stas_throughputDCF [Nodes];
@@ -146,7 +146,7 @@ void SlottedCSMA :: Stop()
 	
 	//temporal statistics
 	float avgBackoffStage = 0;
-	float avgDroppedPackets = 0;
+	float accumaltedDroppedPackets = 0;
 	//
 	
 	for(int n=0;n<Nodes;n++)
@@ -163,10 +163,10 @@ void SlottedCSMA :: Stop()
 	overall_successful_tx_slots = channel.succesful_slots;
 	driftedSlots /= tx_slots;
 
-	p_res = p_res/Nodes;
-	delay_res = delay_res/Nodes;
+	p_res /= Nodes;
+	delay_res /= Nodes;
 	
-	avg_tau = avg_tau/Nodes;
+	avg_tau /= Nodes;
 	
 	//temporal statistics
 	avgBackoffStage /= Nodes;
@@ -175,9 +175,14 @@ void SlottedCSMA :: Stop()
 	//Computing the standard deviation of each of the station's tau
 	//Also capturing each station's throughput to build the Jain's index
 	//And the delay of each station to derive a system average txDalay delay
+	
+	//Creating the file for recording station's individual statistics
+	ofstream staStatistics;
+	staStatistics.open("Results/multiStation.txt", ios::app);
+	
 	for(int i=0; i<Nodes; i++)
 	{
-	    std_tau += pow((float)avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
+	    std_tau += pow(avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
 	    //cout << i << " " << stas[i].staDelay << endl;
@@ -197,7 +202,7 @@ void SlottedCSMA :: Stop()
 	    }
 	    accumThroughputDCF += stas_throughputDCF[i];
 	    accumThroughputECA += stas_throughputECA[i];
-	    avgDroppedPackets += stas[i].droppedPackets;
+	    accumaltedDroppedPackets += stas[i].droppedPackets;
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
 	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
@@ -210,6 +215,11 @@ void SlottedCSMA :: Stop()
 	    
 	    //Gathering the average blocking probability
 	    systemAvgBlockingProbability += stas[i].blockingProbability;
+	    
+	    //-----------------------------------------------
+	    //Gathering statistics from nodes for staMultiSim
+	    //-----------------------------------------------
+		staStatistics << i << " " << stas[i].throughput << endl;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
@@ -251,7 +261,7 @@ void SlottedCSMA :: Stop()
 	    statistics << accumThroughputECA;
 	}statistics << " " << fair_numerator << " ";
 	
-	statistics << systemAvgBlockingProbability << " " << avgDroppedPackets/Nodes << endl;
+	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -273,7 +283,7 @@ void SlottedCSMA :: Stop()
 	
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
-	cout << "Average number of dropped packets: " << avgDroppedPackets/Nodes << endl;
+	cout << "Average number of dropped packets: " << accumaltedDroppedPackets/Nodes << endl;
 	cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;

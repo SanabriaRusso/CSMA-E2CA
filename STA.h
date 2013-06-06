@@ -5,7 +5,7 @@
 #include "FIFO.h"
 #include "includes/backoff.hh"
 
-#define CWMIN 16 //to comply with 802.11n it should 16. Was 32 for 802.11b.
+//#define CWMIN 16 //to comply with 802.11n it should 16. Was 32 for 802.11b.
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
@@ -29,9 +29,9 @@ component STA : public TypeII
         int hysteresis;
         int fairShare;
 	
-        long int observed_slots;
+        /*long int observed_slots;
         long int empty_slots;
-        
+                                                                         
         
         long int collisions;
         long int total_transmissions;
@@ -42,7 +42,22 @@ component STA : public TypeII
 
         long int incoming_packets;
         long int non_blocked_packets;
-        long int blocked_packets;
+        long int blocked_packets;*/
+        
+        double observed_slots;
+        double empty_slots;
+                                                                         
+        
+        double collisions;
+        double total_transmissions;
+        double successful_transmissions;
+        double droppedPackets; //due to retransmissions
+        double packetDisposal;
+        double driftedSlots;
+
+        double incoming_packets;
+        double non_blocked_packets;
+        double blocked_packets;
 
         double txDelay;
         double throughput;
