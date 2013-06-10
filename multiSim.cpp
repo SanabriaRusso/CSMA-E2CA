@@ -81,7 +81,7 @@ int main()
         for(int j = 0; j < N; j++)
         {
             //execute script   
-            command << "./Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;

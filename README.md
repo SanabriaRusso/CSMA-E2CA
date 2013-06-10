@@ -1,7 +1,7 @@
 CSMA/E2CA Implementation
 ------------------------
 
-These source files are part of the UPF's current project that aims at simulating Ken Duffy's proposal of deterministic back-off timers and the concept of stickyness.
+These source files are part of the UPF's current project that aims at simulating Ken Duffy's proposal of deterministic backoff timers and the concept of stickiness.
 
 At the moment of this writing, the code works with the lack of some details.
 
