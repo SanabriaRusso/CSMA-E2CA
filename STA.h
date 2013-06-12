@@ -9,7 +9,7 @@
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
-#define MAX_RET 6
+#define MAX_RET 1000
 
 
 using namespace std;

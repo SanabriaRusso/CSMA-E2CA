@@ -25,32 +25,78 @@ struct nodesAverage{
 	double empty; //empty slots
 	double totalSlots;
 	double tau;
+	double avgQSize;
+	double stdQSize;
+	double avgQEmpty;
+	double stdQEmpty;
 };
 
-int main()
+int main(int argc, char *argv[])
 {
-    int N = 0; //number of simulations per point
-    int n_max = 0;
-    int n_min = 0;
-    int stickiness = 0;
-    int stageStickiness = 0;
-    int time = 0;
-    int fairShare = 0;
-    double b_min = 11000000;
-    float error = 0.0;
-    float drift = 0.0;
-    float DCF = 0.0; //0-100
-    int maxAggregation = 0; //[0,1]
+    int N; //number of simulations per point
+    int n_max;
+    int n_min;
+    int stickiness;
+    int stageStickiness;
+    int time;
+    int fairShare;
+    double b_min;
+    float error;
+    float drift;
+    float DCF; //0-100
+    int maxAggregation; //[0,1]
+    
+    if(argc < 11)
+    {
+    	if(argv[1])
+    	{
+    		string word = argv[1];
+    		string help ("--help");
+    		string helpShort ("-h");
+    		if((word.compare(help) == 0) || (word.compare(helpShort)==0)){
+    			cout << endl;
+    			cout << "-----------------" << endl;
+    			cout << "   Cheat Sheet:  " << endl;
+    			cout << "-----------------" << endl;
+    			cout << "(0)./XXXXX (1)Repetitions (2)N_max (3)N_min (4)Time (5)Rate (6)Stickiness (7)StageStickiness (8)FairShare (9)Error (10)SlotDrift (11)%DCF (12)MaxAggregation" << endl << endl;
+    			return(0);
+    		}else
+    		{
+    			cout << "Unintelligible command" << endl;
+    			cout << "Use the --help or -h parameter to reveal the cheatsheet." << endl << endl;
+    			return(0);
+    		}
+    	}else
+    	{
+    		cout << "Unintelligible command" << endl;
+    		cout << "Use the --help or -h parameter to reveal the cheatsheet." << endl << endl;
+    		return(0);
+    	}
+    }else
+    {
+    	N = atoi(argv[1]); //number of simulations per point
+    	n_max = atoi(argv[2]);
+        n_min = atoi(argv[3]);
+ 		time = atof(argv[4]);
+		b_min = atof(argv[5]);
+ 		stickiness = atoi(argv[6]);
+    	stageStickiness = atoi(argv[7]);
+		fairShare = atoi(argv[8]);
+		error = atof(argv[9]);
+		drift = atof(argv[10]);
+		DCF = atof(argv[11]); //0-100
+		maxAggregation = atoi(argv[12]); //[0,1]
+	}
     
     //For the statistics file
     //int statsLength = 0;
     nodesAverage *meanCarrier;
-    nodesAverage **staMeanCarrier;
+    
     
 
     stringstream command (stringstream::in | stringstream::out);
     
-    cout << "Enter the number of simulations per point" << endl;
+    /*cout << "Enter the number of simulations per point" << endl;
     cin >> N;
     
     cout << "Please introduce n_max" << endl;
@@ -74,19 +120,21 @@ int main()
     cout << "Percentage of nodes executing DCF (%)" << endl;
     cin >> DCF;
     cout << "Maximum Aggregation? (0=no, 1=yes)" << endl;
-    cin >> maxAggregation;
+    cin >> maxAggregation;*/
     
     for(int i = n_min; i <= n_max; i++)
     {
         for(int j = 0; j < N; j++)
         {
-            //execute script   
+            //execute script  
             command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            //command << "/Users/L_SR/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;
-            system(command.str().c_str());
+            system(command.str().c_str()); 
             command.str("");
+            //cout << "Time: " << time << " Station: " << i << " Packet Size: 1024" << " Rate: " << b_min << " Batch: 1 " << "Stickiness: " << stickiness << " stageStickiness: " << stageStickiness << " FairShare: " << fairShare << " Error: " << error/100 << " Drift: " << drift/100 << " DCF: " << DCF/100 << " MA: " << maxAggregation << " Repetition: " << j << endl;
         }
     }
     
@@ -105,7 +153,7 @@ int main()
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
-	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped 23.SxSlots 24.stdSxSlots 25.ColSlots 26.StdColSlots 27.EmptySlots 28.stdEmpty 29.totalSlots 30.stdTotalSlots 31.averageTAU 32.stdTAU" << endl;
+	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped 23.SxSlots 24.stdSxSlots 25.ColSlots 26.StdColSlots 27.EmptySlots 28.stdEmpty 29.totalSlots 30.stdTotalSlots 31.averageTAU 32.stdTAU 33.avgQSize 34.stdQSize 35.avgQEmpty 36.stdQEmpty" << endl;
     
     while(getline(inputFile,input))
     {
@@ -232,6 +280,20 @@ int main()
     		Pt >> tau;
 	    	//cout << tau << endl;
     		meanCarrier[iterator].tau = tau;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream q(token);
+	    	double qSize;
+    		q >> qSize;
+	    	//cout << qSize << endl;
+    		meanCarrier[iterator].avgQSize = qSize;
+    		
+    		getline(tokenizer, token, ' ');
+    		istringstream qE(token);
+	    	double qEmpty;
+    		qE >> qEmpty;
+	    	//cout << qEmpty << endl;
+    		meanCarrier[iterator].avgQEmpty = qEmpty;
     	
     		iterator++;
     	}else
@@ -273,6 +335,10 @@ int main()
     		double stdTotalSlots = 0;
     		double avgTau = 0;
     		double stdTau = 0;
+    		double avgQSize = 0;
+    		double stdQSize = 0;
+    		double avgQEmpty = 0;
+    		double stdQEmpty = 0;
     		
     		
     		//Computing the averages
@@ -293,6 +359,8 @@ int main()
     			avgEmptySlots += (meanCarrier[i].empty);
     			avgTotalSlots += (meanCarrier[i].totalSlots);
     			avgTau += (meanCarrier[i].tau);
+    			avgQSize += (meanCarrier[i].avgQSize);
+    			avgQEmpty += (meanCarrier[i].avgQEmpty);
     		}
     		average = numerator/iterator;
     		avgJFI = numeratorJFI/iterator;
@@ -309,6 +377,8 @@ int main()
     		avgEmptySlots /= iterator;
     		avgTotalSlots /= iterator;
     		avgTau /= iterator;
+    		avgQSize /= iterator;
+    		avgQEmpty /= iterator;
     		
     		
     		
@@ -333,6 +403,8 @@ int main()
     				stdEmptySlots += pow((meanCarrier[j].empty) - avgEmptySlots,2);
     				stdTotalSlots += pow((meanCarrier[j].totalSlots) - avgTotalSlots,2);
     				stdTau += pow((meanCarrier[j].tau) - avgTau,2);
+    				stdQSize += pow((meanCarrier[j].avgQSize) - avgQSize,2);
+    				stdQEmpty += pow((meanCarrier[j].avgQEmpty) - avgQEmpty,2);
     			}
     		}
     		
@@ -351,8 +423,10 @@ int main()
     		stdEmptySlots = sqrt((1./(iterator))*stdEmptySlots);
     		stdTotalSlots = sqrt((1./(iterator))*stdTotalSlots);
     		stdTau = sqrt((1./(iterator))*stdTau);
+    		stdQSize = sqrt((1./(iterator))*stdQSize);
+    		stdQEmpty = sqrt((1./(iterator))*stdQEmpty);
     		    		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << " " << avgSxSlots << " " << stdSxSlots << " " << avgColSlots << " " << stdColSlots << " " << avgEmptySlots << " " << stdEmptySlots << " " << avgTotalSlots << " " << stdTotalSlots << " " << avgTau << " " << stdTau << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << " " << avgSxSlots << " " << stdSxSlots << " " << avgColSlots << " " << stdColSlots << " " << avgEmptySlots << " " << stdEmptySlots << " " << avgTotalSlots << " " << stdTotalSlots << " " << avgTau << " " << stdTau << " " << avgQSize << " " << stdQSize << " " << avgQEmpty << " " << stdQEmpty << endl;
     		iterator = 0;
     		
     	}

@@ -144,10 +144,11 @@ void SlottedCSMA :: Stop()
 	double systemTXDelay = 0.0;
 	double systemAvgBlockingProbability = 0;
 	
-	//temporal statistics
-	float avgBackoffStage = 0;
-	float accumaltedDroppedPackets = 0;
-	//
+	double avgBackoffStage = 0;
+	double accumaltedDroppedPackets = 0;
+	double avgFinalQSize = 0;
+	double QEmpties = 0; //number of ocassions the Q empties in every simulation
+
 	
 	for(int n=0;n<Nodes;n++)
 	{
@@ -188,6 +189,8 @@ void SlottedCSMA :: Stop()
 	    //cout << i << " " << stas[i].staDelay << endl;
 	    //if(stas[i].qEmpty > 1)cout << "Station: " << i << " emptied the queue " << stas[i].qEmpty << " times" << endl;
 	    
+	    QEmpties += stas[i].qEmpty;
+	    
 	    //Separating the collection of throughput of DCF and ECA stations
 	    if(stas[i].DCF > 0)
 	    {
@@ -203,6 +206,7 @@ void SlottedCSMA :: Stop()
 	    accumThroughputDCF += stas_throughputDCF[i];
 	    accumThroughputECA += stas_throughputECA[i];
 	    accumaltedDroppedPackets += stas[i].droppedPackets;
+	    avgFinalQSize += stas[i].qSize;
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
 	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
@@ -227,6 +231,8 @@ void SlottedCSMA :: Stop()
 	systemTXDelay /= Nodes;
 	
 	systemAvgBlockingProbability /= Nodes;
+	avgFinalQSize /= Nodes;
+	
 	
 	double fair_numerator, fair_denominator;
 	
@@ -261,7 +267,7 @@ void SlottedCSMA :: Stop()
 	    statistics << accumThroughputECA;
 	}statistics << " " << fair_numerator << " ";
 	
-	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau << endl;
+	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau  << " " << avgFinalQSize << " " << QEmpties << endl;
 	
 	cout << endl << endl;
 	cout << "--- Overall Statistics ---" << endl;
@@ -285,6 +291,7 @@ void SlottedCSMA :: Stop()
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
 	cout << "Average number of dropped packets: " << accumaltedDroppedPackets/Nodes << endl;
 	cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
+	cout << "Number of times each MAC queue emptied: " << QEmpties << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;
 	cout << "Collision Slots: " << overall_collisions << endl;
