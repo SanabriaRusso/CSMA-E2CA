@@ -186,6 +186,7 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow(avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
+	    
 	    //cout << i << " " << stas[i].staDelay << endl;
 	    //if(stas[i].qEmpty > 1)cout << "Station: " << i << " emptied the queue " << stas[i].qEmpty << " times" << endl;
 	    
@@ -223,7 +224,8 @@ void SlottedCSMA :: Stop()
 	    //-----------------------------------------------
 	    //Gathering statistics from nodes for staMultiSim
 	    //-----------------------------------------------
-		staStatistics << i << " " << stas[i].throughput << endl;
+	    // 1.throughput 2.collisions 3.TAU 4.Delay 5.QEmpty 6.QSize 7.avgBackoffStage 8.DroppedPackets
+		staStatistics << i << " " << stas[i].throughput << " " << stas[i].collisions / stas[i].total_transmissions << " " << stas[i].total_transmissions / stas[i].observed_slots << " " << stas[i].staDelay << " " << stas[i].qEmpty << " " << stas[i].qSize << " " << stas[i].finalBackoffStage << " " << stas[i].droppedPackets << endl;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
@@ -270,6 +272,11 @@ void SlottedCSMA :: Stop()
 	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau  << " " << avgFinalQSize << " " << QEmpties << endl;
 	
 	cout << endl << endl;
+	
+	//--------------------------------------------------------------//
+	//---------Presentation when simulation ends--------------------//
+	//--------------------------------------------------------------//
+	
 	cout << "--- Overall Statistics ---" << endl;
 	cout << "Average TAU = " << avg_tau << endl;
 	cout << "Standard Deviation = " << (double)std_tau << endl;
@@ -310,6 +317,7 @@ void SlottedCSMA :: Stop()
 	cout << "---Debugging the mixed scenario---" << endl;
 	cout << "There are: " << DCFStas << " stations with DCF and: " << ECAStas << " with CSMA/ECA." << endl;
 	if(Nodes != (DCFStas + ECAStas)) cout << "Miscount of stations" << endl;
+	
 	//Avoiding divisions by zero on the cout
 	if(ECAStas == 0) ECAStas = 1;
 	if(DCFStas == 0) DCFStas = 1;
@@ -325,8 +333,6 @@ void SlottedCSMA :: Stop()
 	
 
 };
-
-// ---------------------------------------
 
 int main(int argc, char *argv[])
 {

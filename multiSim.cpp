@@ -433,6 +433,8 @@ int main(int argc, char *argv[])
     }//for the while statement
     
     multiAverage.close();
+    
+    
     //---------------------------------
     //Processing per nodes statistics
     //When n_max-n_min=0
@@ -442,7 +444,7 @@ int main(int argc, char *argv[])
     if(n_max - n_min == 0)
     {
     	nodesAverage** staMeanCarrier = new nodesAverage*[n_max];
-    	for(int i = 0; i < N; i++)
+    	for(int i = 0; i < n_max; i++)
     	{
     		staMeanCarrier[i] = new nodesAverage[N];
     	}
@@ -451,7 +453,7 @@ int main(int argc, char *argv[])
     
 		ofstream staMultiAverage;
 		staMultiAverage.open("Results/staMultiAverage.txt", ios::app);
-		staMultiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-avgPc 5-stdPc 6-avgTAU 7-stdTAU 8-avgDropped 9-stdDropped" << endl;
+		staMultiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-avgPc 5-stdPc 6-avgTAU 7-stdTAU 8-avgDelay 9-stdDelay 10-avgEmpty 11-stdEmpty 12-avgQSize 13-stdQSize 14-avgBackoffStage 15-stdBackoffStage 16-avgDropped 17-stdDropped" << endl;
     
     	if(!staInputFile)
     	{
@@ -462,36 +464,92 @@ int main(int argc, char *argv[])
 			{
 				for(int s = 0; s < n_max; s++)
 				{
-            		staInputFile >> staMeanCarrier[s][r].num >> staMeanCarrier[s][r].rate;
-            		//cout << staMeanCarrier[s][r].num << " " << staMeanCarrier[s][r].rate << endl;
+            		staInputFile >> staMeanCarrier[s][r].num >> staMeanCarrier[s][r].rate >> staMeanCarrier[s][r].cp >> staMeanCarrier[s][r].tau >> staMeanCarrier[s][r].delay >> staMeanCarrier[s][r].avgQEmpty >> staMeanCarrier[s][r].avgQSize >> staMeanCarrier[s][r].backoffStage >> staMeanCarrier[s][r].dropped;
         		}
         	}
 	    }
 
 		//Calculating the average and std
-		double avgRate = 0;
-		double stdRate = 0;
+		double avgStaRate = 0;
+		double stdStaRate = 0;
+		double avgStaPc = 0;
+		double stdStaPc = 0;
+		double avgStaTAU = 0;
+		double stdStaTAU = 0;
+		double avgStaDelay = 0;
+		double stdStaDelay = 0;
+		double avgStaQEmpty = 0;
+		double stdStaQEmpty = 0;
+		double avgStaQSize = 0;
+		double stdStaQSize = 0;
+		double avgStaBackoffStage = 0;
+		double stdStaBackoffStage = 0;
+		double avgStaDropped = 0;
+		double stdStaDropped = 0;
 		
 		for(int i = 0; i < n_max; i++)
 		{
 			for(int j = 0; j < N; j++)
 			{
-				avgRate += staMeanCarrier[i][j].rate;
+				avgStaRate += staMeanCarrier[i][j].rate;
+				avgStaPc += staMeanCarrier[i][j].cp;
+				avgStaTAU += staMeanCarrier[i][j].tau;
+				avgStaDelay += staMeanCarrier[i][j].delay;
+				avgStaQEmpty += staMeanCarrier[i][j].avgQEmpty;
+				avgStaQSize += staMeanCarrier[i][j].avgQSize;
+				avgStaBackoffStage += staMeanCarrier[i][j].backoffStage;
+				avgStaDropped += staMeanCarrier[i][j].dropped;
 			}
 			
-			avgRate /= N;
-			
-			staMultiAverage << i << " " << avgRate << " ";
+			avgStaRate /= N;
+			avgStaPc /= N;
+			avgStaTAU /= N;
+			avgStaDelay /= N;
+			avgStaQEmpty /= N;
+			avgStaQSize /= N;
+			avgStaBackoffStage /= N;
+			avgStaDropped /= N;
 			
 			//Calculating the STD
 			for(int j = 0; j < N; j++)
 			{
-				stdRate += pow((staMeanCarrier[i][j].rate) - avgRate,2);
+				stdStaRate += pow((staMeanCarrier[i][j].rate) - avgStaRate,2);
+				stdStaPc += pow((staMeanCarrier[i][j].cp) - avgStaPc,2);
+				stdStaTAU += pow((staMeanCarrier[i][j].tau) - avgStaTAU,2);
+				stdStaDelay += pow((staMeanCarrier[i][j].delay) - avgStaDelay,2);
+				stdStaQEmpty += pow((staMeanCarrier[i][j].avgQEmpty) - avgStaQEmpty,2);
+				stdStaQSize += pow((staMeanCarrier[i][j].avgQSize) - avgStaQSize,2);
+				stdStaBackoffStage += pow((staMeanCarrier[i][j].backoffStage) - avgStaBackoffStage,2);
+				stdStaDropped += pow((staMeanCarrier[i][j].dropped) - avgStaDropped,2);
 			}
-			stdRate = sqrt((1./(N))*stdRate);
-			staMultiAverage << stdRate << endl;
-			avgRate = 0;
-			stdRate = 0;
+			stdStaRate = sqrt((1./(N))*stdStaRate);
+			stdStaPc = sqrt((1./(N))*stdStaPc);			
+			stdStaTAU = sqrt((1./(N))*stdStaTAU);
+			stdStaDelay = sqrt((1./(N))*stdStaDelay);
+			stdStaQEmpty = sqrt((1./(N))*stdStaQEmpty);
+			stdStaQSize = sqrt((1./(N))*stdStaQSize);
+			stdStaBackoffStage = sqrt((1./(N))*stdStaBackoffStage);
+			stdStaDropped = sqrt((1./(N))*stdStaDropped);
+			
+			//Writing in the output file
+			staMultiAverage << i << " " << avgStaRate << " " << stdStaRate << " " << avgStaPc << " " << stdStaPc << " " << avgStaTAU << " " << stdStaTAU << " " << avgStaDelay << " " << stdStaDelay << " " << avgStaQEmpty << " " << stdStaQEmpty << " " << avgStaQSize << " " << stdStaQSize << " " << avgStaBackoffStage << " " << stdStaBackoffStage << endl;
+			
+			avgStaRate = 0;
+			stdStaRate = 0;
+			avgStaPc = 0;
+			stdStaPc = 0;
+			avgStaTAU = 0;
+			stdStaTAU = 0;
+			avgStaDelay = 0;
+			stdStaDelay = 0;
+			avgStaQEmpty = 0;
+			stdStaQEmpty = 0;
+			avgStaQSize = 0;
+			stdStaQSize = 0;
+			avgStaBackoffStage = 0;
+			stdStaBackoffStage = 0;
+			avgStaDropped = 0;
+			stdStaDropped = 0;
 		}
 
     	staMultiAverage.close();
