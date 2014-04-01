@@ -90,12 +90,24 @@ def average(listOfValues):
 	else:
 		return 0
 		
+def std(listOfValues):
+	if len(listOfValues) > 1:
+		numerator = 0
+		counter = 0
+		mean = average(listOfValues)
+		for item in listOfValues:
+			numerator = numerator + (math.fabs(float(item) - mean)**(2))
+			counter = counter + 1
+		return (numerator/(counter - 1))**(0.5)
+	else:
+		return 0
+		
 def exportGNUPlot(dictionary, listOfHosts, file):
 	with open(file, 'w') as output:
-		output.write("#0. numberOfHosts, 1. slotCount, 2. SxSlots, 3. ColSlots, 4. EmptySlots" + '\n')
+		output.write("#0. numberOfHosts, 1. slotCount, 2. SxSlots, 3. stdSxSlots, 4. ColSlots, 5. stdColSlots, 6. EmptySlots, 7. stdEmptySlots" + '\n')
 		for h in listOfHosts:
 			for s in dictionary[h]:
-				output.write(str(h) + ' ' + str(s) + ' ' + str(average(dictionary[h][s][2])) + ' ' + str(average(dictionary[h][s][1])) + ' ' + str(average(dictionary[h][s][3])) + '\n')
+				output.write(str(h) + ' ' + str(s) + ' ' + str(average(dictionary[h][s][2])) + ' ' + str(std(dictionary[h][s][2])) + ' ' + str(average(dictionary[h][s][1])) + ' ' + str(std(dictionary[h][s][1])) + ' ' + str(average(dictionary[h][s][3])) + ' ' + str(std(dictionary[h][s][3])) + '\n')
 	output.close()
 		
 		
