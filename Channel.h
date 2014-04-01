@@ -121,14 +121,14 @@ void Channel :: Sampler(trigger_t &)
 {
     //Statistics for the evolution of Cp
     
-	if(total_slots) 
+	/*if(total_slots > 0) 
 	{
 	    slotsInTime << SimTime() << " " << collision_slots/total_slots << endl;
 	}
 	else
 	{
 	    slotsInTime << SimTime() << " 0" << endl;
-	}
+	}*/
 	
 	cpSampler.Set(SimTime() + 1);
 }
@@ -169,16 +169,14 @@ void Channel :: EndReceptionTime(trigger_t &)
 		slot_time.Set(SimTime()+collision_duration);
 		collision_slots ++;	
 	}
-
-	
-	total_slots++;
+		
+	total_slots++; //Just to control that total = empty + successful + collisions
 	
 	//Used to plot slots vs. collision probability
-	test++;
 	
-    if((test % 1000 == 0) && (test < 10001))
+    if(int(total_slots) % 1000 == 0) //just printing in thousands increments
 	{
-	        slotsInTime << Nodes << " " <<  test << " " << collision_slots/total_slots << " " << succesful_slots/total_slots << " " << empty_slots/total_slots << endl;
+	        slotsInTime << Nodes << " " << SimTime() << " " <<  total_slots << " " << collision_slots/total_slots << " " << succesful_slots/total_slots << " " << empty_slots/total_slots << endl;
 	}
 	
 }
