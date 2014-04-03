@@ -9,7 +9,7 @@
 #define MAXSTAGE 5
 
 //Suggested value is MAXSTAGE+1
-#define MAX_RET 1000
+#define MAX_RET 6
 
 
 using namespace std;
@@ -53,6 +53,7 @@ component STA : public TypeII
         double successful_transmissions;
         double droppedPackets; //due to retransmissions
         double packetDisposal;
+        double packetDisposalRET; //disposal due to retransmissions
         double driftedSlots;
 
         double incoming_packets;
@@ -141,6 +142,7 @@ void STA :: Start()
     successful_transmissions = 0;
     droppedPackets = 0;
     packetDisposal = 0;
+    packetDisposalRET = 0;
     total_transmissions = 0;
 
     incoming_packets = 0;
@@ -213,7 +215,7 @@ void STA :: Stop()
     cout << "Fair Share: " << fairShare << endl;
     if(qEmpty > 1)
     {
-    	cout << "The queue emptied this time" << endl;
+    	cout << "The queue emptied " << qEmpty <<" times" << endl;
     }else
     {
     	cout << "Queue was always full" << endl;
@@ -327,40 +329,51 @@ void STA :: in_slot(SLOT_notification &slot)
                 }
                     
                                                                   
-                if (txAttempt > MAX_RET)
-                {
-                    txAttempt = 0;
+                /*Dropping just the number of packets that have suffered the maximum retransmission
+                attempts.*/
+                
+                if ((MAX_RET < txAttempt) && (txAttempt < (MAX_RET + MAXSTAGE + 1)))
+                {   
                     //after dropping a frame in DCF, the backoff_stage is reset
                     if(hysteresis == 0) backoff_stage = 0;
                     
-                    //Removing as many packets as were supposed to be sent
                     if(fairShare > 0){
                     	if(maxAggregation > 0)
                     	{
-                    		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
-                    		droppedPackets+=packetDisposal;
-                    		for(int i = 0; i < packetDisposal; i++)
+                    		//With maximum aggregation all packets are dropped
+                    		packetDisposalRET = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
+                    		droppedPackets+=packetDisposalRET;
+                    		for(int i = 0; i < packetDisposalRET; i++)
                     		{
                     			MAC_queue.DelFirstPacket();
                     		}
                     	}else
                     	{
-                    		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
-                    		droppedPackets+=packetDisposal;
-                    		for(int i = 0; i < packetDisposal; i++)
+                    		packetDisposalRET = std::min((int)pow(2,txAttempt - (MAX_RET + 1)),MAC_queue.QueueSize());
+                    		droppedPackets+=packetDisposalRET;
+                    		for(int i = 0; i < packetDisposalRET; i++)
                     		{
                     			MAC_queue.DelFirstPacket();
                     		}
                     	}
-                    	packetDisposal = 0;
                     }else
                     {
+                    	txAttempt = 0;
                     	droppedPackets++;
                     	MAC_queue.DelFirstPacket();
                  	}
                  	
                  	if(MAC_queue.QueueSize() > 0)
                  	{
+                 		//If all 2^MAXSTAGE-1 packets were dropped
+                 		//We drop the last packet (to complete 2^MAXSTAGE packets) and reset the counter
+                 		if(txAttempt == MAX_RET + MAXSTAGE)
+                 		{
+                 			MAC_queue.DelFirstPacket();
+                 			droppedPackets++;
+                 			txAttempt = 0;
+                 			packetDisposalRET = 0;
+                 		}
                  		packet = MAC_queue.GetFirstPacket();
                  		packet.send_time = SimTime();
                  	}else
@@ -371,7 +384,7 @@ void STA :: in_slot(SLOT_notification &slot)
             }
             else
             {
-                //Other stations collide
+                //Other stations collided
                 backoff_counter--;
             }
         }
