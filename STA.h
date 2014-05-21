@@ -84,6 +84,8 @@ component STA : public TypeII
     private:
         int backoff_counter;
         int backoff_stage;
+        int pickup_backoff_stage;
+        int previous_pickup_backoff_stage;
         int backlogged;
 
         int txAttempt;	
@@ -130,6 +132,8 @@ void STA :: Start()
 	
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;
+    pickup_backoff_stage = 0;
+    previous_pickup_backoff_stage = 0;
     packet.source = node_id;
     packet.L = 1024;
     packet.send_time = SimTime();
@@ -293,6 +297,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     packet.send_time = SimTime();
                     backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
+                pickup_backoff_stage = backoff_stage;
+                previous_pickup_backoff_stage = 0;
             }else
             {
                 //Other stations transmitted
@@ -329,8 +335,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 }
                     
                                                                   
-                /*Dropping just the number of packets that have suffered the maximum retransmission
-                attempts.*/
+                /*We drop the packets that have reached the maximum retransmission limit*/
                 
                 if ((MAX_RET < txAttempt) && (txAttempt < (MAX_RET + MAXSTAGE + 1)))
                 {   
@@ -343,18 +348,27 @@ void STA :: in_slot(SLOT_notification &slot)
                     		//With maximum aggregation all packets are dropped
                     		packetDisposalRET = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                     		droppedPackets+=packetDisposalRET;
+                    		txAttempt = 0;
                     		for(int i = 0; i < packetDisposalRET; i++)
                     		{
                     			MAC_queue.DelFirstPacket();
                     		}
                     	}else
                     	{
-                    		packetDisposalRET = std::min((int)pow(2,txAttempt - (MAX_RET + 1)),MAC_queue.QueueSize());
+                    		if(previous_pickup_backoff_stage == 0) //first of MAXSTAGE+MAX_RET+1 if pickup backoff stage was zero
+                    		{
+                    			packetDisposalRET = std::min((int)pow(2,pickup_backoff_stage),MAC_queue.QueueSize());
+                    		}else
+                    		{         		
+                    			packetDisposalRET = std::min((int)(pow(2,pickup_backoff_stage)-pow(2,previous_pickup_backoff_stage)),MAC_queue.QueueSize());         		
+                    		}
                     		droppedPackets+=packetDisposalRET;
                     		for(int i = 0; i < packetDisposalRET; i++)
                     		{
                     			MAC_queue.DelFirstPacket();
                     		}
+                    		previous_pickup_backoff_stage = pickup_backoff_stage;
+                 			pickup_backoff_stage = std::min(pickup_backoff_stage+1, MAXSTAGE);
                     	}
                     }else
                     {
@@ -366,8 +380,9 @@ void STA :: in_slot(SLOT_notification &slot)
                  	if(MAC_queue.QueueSize() > 0)
                  	{
                  		//If all 2^MAXSTAGE-1 packets were dropped
-                 		//We drop the last packet (to complete 2^MAXSTAGE packets) and reset the counter
-                 		if(txAttempt == MAX_RET + MAXSTAGE)
+                 		//We drop the last packet (to complete 2^MAXSTAGE packets) 
+                 		//and reset the counter.
+                 		if((txAttempt == MAX_RET + MAXSTAGE) || (pickup_backoff_stage == MAXSTAGE))
                  		{
                  			MAC_queue.DelFirstPacket();
                  			droppedPackets++;
