@@ -154,10 +154,10 @@ void STA :: Start()
     blocked_packets = 0;
     blockingProbability = 0;
 
-    txDelay = 0;
+    txDelay = 0.0;
     
     throughput = 0;
-    staDelay = 0;
+    staDelay = 0.0;
     
     slotDrift = 0;
     driftedSlots = 0;
@@ -199,7 +199,8 @@ void STA :: Stop()
     	cout << "TAU = " << (float)total_transmissions / (float)observed_slots << " |" << " p = " << (float)collisions / (float)total_transmissions << endl;
     	cout << "Throughput of this station = " << throughput << "bps" << endl;
     	cout << "Blocking Probability = " << blockingProbability << endl;
-    	cout << "Average Delay (queueing + service) = " << staDelay << endl;
+    	//cout << "Average Delay (queueing + service) = " << staDelay << endl;
+    	cout << "Average Delay (contention) = " << staDelay << endl;
     	cout << endl;
     }
     
@@ -254,28 +255,38 @@ void STA :: in_slot(SLOT_notification &slot)
                 		//Deleting as many packets as maxAggregation
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
-                			txDelay += SimTime() - packet.queuing_time;
+                			//txDelay += SimTime() - packet.queuing_time;
+                			txDelay += SimTime() - packet.send_time;
                 			MAC_queue.DelFirstPacket();
                 			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
                 	}else
                 	{
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
+                		//cout << "---STA-" << node_id << " sent packet " << successful_transmissions << " at " << SimTime() << endl;
                 		successful_transmissions += packetDisposal;
                 		//if(node_id==10)cout << "Disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
-                			txDelay += SimTime() - packet.queuing_time;
+                			//txDelay += SimTime() - packet.queuing_time;
+                			txDelay += SimTime() - packet.send_time;
+                			//cout << "Sta-" << node_id << endl;
+                			//cout << "***Adding to txDelay (" << successful_transmissions << ") " << SimTime() << " - " << packet.send_time << " (" << SimTime()-packet.send_time << ")"<< endl;
                 			MAC_queue.DelFirstPacket();
-                			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
+                			if(i < packetDisposal-1){ 
+                				packet = MAC_queue.GetFirstPacket();
+                				packet.send_time = SimTime();
+                				//cout << "STA-" << node_id << " taking packet " << successful_transmissions << " at " << SimTime() << endl;
+                			}
                     	}
                 	}
                 	packetDisposal = 0;
                 }else
                 {
                     successful_transmissions++;
-                    txDelay += SimTime() - packet.queuing_time;
+                    //txDelay += SimTime() - packet.queuing_time;
+                    txDelay += SimTime() - packet.send_time;
                     MAC_queue.DelFirstPacket();
                 }
                 
@@ -295,6 +306,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 {
                     packet = MAC_queue.GetFirstPacket(); //any previously packet in the variable is replaced by a new one
                     packet.send_time = SimTime();
+                    //cout << "STA-" << node_id << " taking packet " << successful_transmissions << " at " << SimTime() << endl;
                     backoff_counter = backoff(backoff_stage, station_stickiness, driftProbability);
                 }
                 pickup_backoff_stage = backoff_stage;
@@ -391,6 +403,7 @@ void STA :: in_slot(SLOT_notification &slot)
                  		}
                  		packet = MAC_queue.GetFirstPacket();
                  		packet.send_time = SimTime();
+                 		//cout << "STA-" << node_id << " taking packet " << successful_transmissions << " at " << SimTime() << " (RET)" << endl;
                  	}else
                  	{
                  		backlogged = 0;

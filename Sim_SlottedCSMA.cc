@@ -186,6 +186,7 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow(avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
+
 	    
 	    //cout << i << " " << stas[i].staDelay << endl;
 	    //if(stas[i].qEmpty > 1)cout << "Station: " << i << " emptied the queue " << stas[i].qEmpty << " times" << endl;
@@ -210,13 +211,15 @@ void SlottedCSMA :: Stop()
 	    avgFinalQSize += stas[i].qSize;
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
-	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
+	    //The code was commented because we are deactivating the traffic generator to derive some metrics quicker
+	    /*if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
 	    {	
 	    	cout << "Station " << i << ": is alright" << endl;
 	    }else
 	    {
-	    	cout << "Station " << i << ": differs in " << stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets) << endl;
-	    }
+	    	cout << "Station " << i << ": differs in " << fabs(stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)) << endl;
+	    	//cout << "---Sx + Blocked + qSize + dropped - initialQ = " << (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets) - stas[i].incoming_packets << endl;
+	    }*/
 	    
 	    //Gathering the average blocking probability
 	    systemAvgBlockingProbability += stas[i].blockingProbability;
@@ -290,14 +293,19 @@ void SlottedCSMA :: Stop()
 	}
 	
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
-	cout << "Overall average system TX delay = " << systemTXDelay << endl;
+	//cout << "Overall average system TX delay = " << systemTXDelay << endl;
+	cout << "Overall average system TX delay (contention) = " << systemTXDelay << endl;
+	/*for (int w = 0; w < Nodes; w++)
+	{
+		cout << "---Sta " << w << ": " << stas[w].staDelay << endl;
+	}*/
 	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl << endl;
 	
 	
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
 	cout << "Average number of dropped packets: " << accumaltedDroppedPackets/Nodes << endl;
-	cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
+	//cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
 	cout << "Number of times each MAC queue emptied: " << QEmpties << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;

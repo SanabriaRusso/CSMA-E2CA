@@ -42,7 +42,8 @@ void BatchPoissonSource :: Setup()
 void BatchPoissonSource :: Start()
 {
 	packet_rate=bandwidth/(L*8);
-	inter_packet_timer.Set(Exponential(1/packet_rate));
+	//inter_packet_timer.Set(Exponential(1/packet_rate));
+	inter_packet_timer.Set(0);
 	seq=0;
 };
 	
@@ -57,9 +58,9 @@ void BatchPoissonSource :: new_packet(trigger_t &)
 
 	packet.L = L;
 			
-	int RB = (int) Random(MaxBatch)+1;
+	//int RB = (int) Random(MaxBatch)+1;
 
-	for(int p=0; p < RB; p++)
+	/*for(int p=0; p < RB; p++)
 	{
 		packet.seq = seq;
 		packet.send_time = SimTime();
@@ -69,9 +70,18 @@ void BatchPoissonSource :: new_packet(trigger_t &)
 		seq++;
 		if(seq == MAXSEQ) seq = 0;
 
+	}*/
+	
+	for(int i = 0; i <= MAXSEQ; i++)
+	{
+		packet.seq = seq;
+		//packet.send_time = SimTime();
+		seq++;
+
+		out(packet);	
 	}
 	
-	inter_packet_timer.Set(SimTime()+Exponential(RB/packet_rate));	
+	//inter_packet_timer.Set(SimTime()+Exponential(RB/packet_rate));
 
 };
 
