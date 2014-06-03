@@ -43,7 +43,7 @@ def main(argv):
 		capture = list(csv.reader(file, delimiter=' ')) #stores the content of the csv as a list
 		for lines in capture:
 			numNodes = int(capture[rows][nodes])
-			slots = int(capture[rows][slotCount])
+			slots = capture[rows][slotCount]
 			if numNodes not in slotStatistics:
 				###################################################
 				###########Capturing statistics per slots##########
