@@ -12,9 +12,9 @@
 #define L_ack 112*/
 
 //Complying with 802.11n
-#define SLOT 16e-06
-#define DIFS 34e-06
-#define SIFS 9e-06
+#define SLOT 16e-06 //should be 9 or 20
+#define DIFS 34e-06 //should be 28 or 50
+#define SIFS 9e-06 // it should 10 or 16 for 5 GHz
 #define LDBPS 256
 #define TSYM 4e-06
 			
@@ -31,6 +31,7 @@ component Channel : public TypeII
 	public:
 		int Nodes;
 		float error;
+		double bitsToSend;
 
 		// Connections
 		outport [] void out_slot(SLOT_notification &slot);	
@@ -111,7 +112,9 @@ void Channel :: Stop()
 	printf("\n\n");
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %e, Succesful = %e, Collision = %e \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
-	printf("Total packets sent to the Channel: %d", (int)succesful_slots);
+	printf("Total packets sent to the Channel: %d\n", (int)succesful_slots);
+	printf("Duration of a transmission: %f\n", (float) 32e-06 + ceil((16 + (1)*(32+(1024*8)+288) + 6)/LDBPS)*TSYM + SIFS + TBack + DIFS + SLOT);
+	printf("Length of a frame: %d\n", (int) bitsToSend*1);
 	printf("\n\n");
 	
 	slotsInTime.close();

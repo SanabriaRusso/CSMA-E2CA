@@ -4,6 +4,7 @@
 #include "Aux.h"
 #include "FIFO.h"
 #include "includes/backoff.hh"
+#include "includes/computeQueueingAndService.hh"
 
 //#define CWMIN 16 //to comply with 802.11n it should 16. Was 32 for 802.11b.
 #define MAXSTAGE 5
@@ -257,6 +258,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 		{
                 			//txDelay += SimTime() - packet.queuing_time;
                 			txDelay += SimTime() - packet.send_time;
+                            computeQueuingAndServiceTime(packet.queuing_time, SimTime());
                 			MAC_queue.DelFirstPacket();
                 			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
@@ -271,6 +273,7 @@ void STA :: in_slot(SLOT_notification &slot)
                 		{
                 			//txDelay += SimTime() - packet.queuing_time;
                 			txDelay += SimTime() - packet.send_time;
+                            computeQueuingAndServiceTime(packet.queuing_time, SimTime());
                 			//cout << "Sta-" << node_id << endl;
                 			//cout << "***Adding to txDelay (" << successful_transmissions << ") " << SimTime() << " - " << packet.send_time << " (" << SimTime()-packet.send_time << ")"<< endl;
                 			MAC_queue.DelFirstPacket();
@@ -287,6 +290,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     successful_transmissions++;
                     //txDelay += SimTime() - packet.queuing_time;
                     txDelay += SimTime() - packet.send_time;
+                    computeQueuingAndServiceTime(packet.queuing_time, SimTime());
                     MAC_queue.DelFirstPacket();
                 }
                 

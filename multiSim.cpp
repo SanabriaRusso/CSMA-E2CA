@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
     //For the statistics file
     //int statsLength = 0;
     nodesAverage *meanCarrier;
+    //slotsAverage *slotCarrier;
     
     
 
@@ -127,7 +128,7 @@ int main(int argc, char *argv[])
         for(int j = 0; j < N; j++)
         {
             //execute script  
-            command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            command << "/Users/sanabriarusso/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //command << "/Users/L_SR/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
@@ -137,6 +138,7 @@ int main(int argc, char *argv[])
             //cout << "Time: " << time << " Station: " << i << " Packet Size: 1024" << " Rate: " << b_min << " Batch: 1 " << "Stickiness: " << stickiness << " stageStickiness: " << stageStickiness << " FairShare: " << fairShare << " Error: " << error/100 << " Drift: " << drift/100 << " DCF: " << DCF/100 << " MA: " << maxAggregation << " Repetition: " << j << endl;
         }
     }
+    
     
     //Manipulating the statistics file
     ifstream fin("Results/multiSim.txt");

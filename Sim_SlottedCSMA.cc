@@ -54,6 +54,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 	channel.Nodes = NumNodes;
 	channel.out_slot.SetSize(NumNodes);
 	channel.error = channelErrors;
+	channel.bitsToSend = PacketLength;
 
 	// Sat Nodes
 	//Determining the cut value for assigning different protocols
