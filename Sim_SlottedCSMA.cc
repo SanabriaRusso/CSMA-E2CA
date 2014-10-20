@@ -299,7 +299,8 @@ void SlottedCSMA :: Stop()
 	{
 		cout << "---Sta " << w << ": " << stas[w].staDelay << endl;
 	}*/
-	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl << endl;
+	cout << "Percentage of drifted slots = " << driftedSlots*100 << "%" << endl;
+	cout << "Source rate = " << Bandwidth_ << "bps" << endl << endl;
 	
 	
 	cout << "***Debugg***" << endl;

@@ -143,7 +143,7 @@ void STA :: Start()
     
     txAttempt = 0;
     collisions = 0;
-    successful_transmissions = 0;
+    successful_transmissions = 0.0;
     droppedPackets = 0;
     packetDisposal = 0;
     packetDisposalRET = 0;
@@ -201,6 +201,7 @@ void STA :: Stop()
     	cout << "Blocking Probability = " << blockingProbability << endl;
     	//cout << "Average Delay (queueing + service) = " << staDelay << endl;
     	cout << "Average Delay (contention) = " << staDelay << endl;
+        cout << "Incoming Packets = " << incoming_packets << ", Queue Size = " << MAC_queue.QueueSize() << endl;
     	cout << endl;
     }
     
