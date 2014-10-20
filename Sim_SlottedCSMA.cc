@@ -142,6 +142,7 @@ void SlottedCSMA :: Stop()
 	
 	double fairness_index = 0;
 	double systemTXDelay = 0.0;
+	double systemQueueingDelay = 0.0;
 	double systemAvgBlockingProbability = 0;
 	
 	double avgBackoffStage = 0;
@@ -186,6 +187,7 @@ void SlottedCSMA :: Stop()
 	    std_tau += pow(avg_tau - ((float)stas[i].total_transmissions / (float)stas[i].observed_slots),2);
 	    stas_throughput[i] = stas[i].throughput;
 	    systemTXDelay += stas[i].staDelay;
+	    systemQueueingDelay += stas[i].staQueueingDelay;
 
 	    
 	    //cout << i << " " << stas[i].staDelay << endl;
@@ -227,13 +229,14 @@ void SlottedCSMA :: Stop()
 	    //-----------------------------------------------
 	    //Gathering statistics from nodes for staMultiSim
 	    //-----------------------------------------------
-	    // 1.throughput 2.collisions 3.TAU 4.Delay 5.QEmpty 6.QSize 7.avgBackoffStage 8.DroppedPackets
-		staStatistics << i << " " << stas[i].throughput << " " << stas[i].collisions / stas[i].total_transmissions << " " << stas[i].total_transmissions / stas[i].observed_slots << " " << stas[i].staDelay << " " << stas[i].qEmpty << " " << stas[i].qSize << " " << stas[i].finalBackoffStage << " " << stas[i].droppedPackets << endl;
+	    // 1.throughput 2.collisions 3.TAU 4.Delay 5.QEmpty 6.QSize 7.avgBackoffStage 8.DroppedPackets 9.QueueingDelay
+		staStatistics << i << " " << stas[i].throughput << " " << stas[i].collisions / stas[i].total_transmissions << " " << stas[i].total_transmissions / stas[i].observed_slots << " " << stas[i].staDelay << " " << stas[i].qEmpty << " " << stas[i].qSize << " " << stas[i].finalBackoffStage << " " << stas[i].droppedPackets << " " << stas[i].staQueueingDelay << endl;
 	}
 	
 	std_tau = pow((1.0/Nodes) * (float)std_tau, 0.5);
 	
 	systemTXDelay /= Nodes;
+	systemQueueingDelay /= Nodes;
 	
 	systemAvgBlockingProbability /= Nodes;
 	avgFinalQSize /= Nodes;
@@ -272,7 +275,7 @@ void SlottedCSMA :: Stop()
 	    statistics << accumThroughputECA;
 	}statistics << " " << fair_numerator << " ";
 	
-	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau  << " " << avgFinalQSize << " " << QEmpties << endl;
+	statistics << systemAvgBlockingProbability << " " << accumaltedDroppedPackets/Nodes << " " << overall_successful_tx_slots << " " << overall_collisions << " " << overall_empty << " " << total_slots << " " << avg_tau  << " " << avgFinalQSize << " " << QEmpties << " " << systemQueueingDelay << endl;
 	
 	cout << endl << endl;
 	
@@ -295,6 +298,7 @@ void SlottedCSMA :: Stop()
 	cout << "Jain's Fairness Index = " << fairness_index << endl;
 	//cout << "Overall average system TX delay = " << systemTXDelay << endl;
 	cout << "Overall average system TX delay (contention) = " << systemTXDelay << endl;
+	cout << "Overall average system Queueing + Service Delay = " << systemQueueingDelay << endl;
 	/*for (int w = 0; w < Nodes; w++)
 	{
 		cout << "---Sta " << w << ": " << stas[w].staDelay << endl;

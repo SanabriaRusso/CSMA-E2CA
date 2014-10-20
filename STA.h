@@ -28,7 +28,7 @@ component STA : public TypeII
         int station_stickiness;
         int hysteresis;
         int fairShare;
-	
+        	
         /*long int observed_slots;
         long int empty_slots;
                                                                          
@@ -61,8 +61,10 @@ component STA : public TypeII
         double blocked_packets;
 
         double txDelay;
+        double queueingDelay;
         double throughput;
-        double staDelay; //overall station's delay
+        double staDelay; //overall station's contention delay
+        double staQueueingDelay;
         double blockingProbability;
         
         float slotDrift;
@@ -155,9 +157,11 @@ void STA :: Start()
     blockingProbability = 0;
 
     txDelay = 0.0;
+    queueingDelay = 0.0;
     
     throughput = 0;
     staDelay = 0.0;
+    staQueueingDelay = 0.0;
     
     slotDrift = 0;
     driftedSlots = 0;
@@ -179,9 +183,11 @@ void STA :: Stop()
     if(successful_transmissions > 0)
     {
     	staDelay = (float)txDelay / (float)successful_transmissions;
+        staQueueingDelay = queueingDelay / successful_transmissions;
     }else
     {
     	staDelay = 0;
+        queueingDelay = 0;
     }
     
     //temporal statistics
@@ -201,6 +207,7 @@ void STA :: Stop()
     	cout << "Blocking Probability = " << blockingProbability << endl;
     	//cout << "Average Delay (queueing + service) = " << staDelay << endl;
     	cout << "Average Delay (contention) = " << staDelay << endl;
+        cout << "Average Queue + Service delay = " << staQueueingDelay << endl;
         cout << "Incoming Packets = " << incoming_packets << ", Queue Size = " << MAC_queue.QueueSize() << endl;
     	cout << endl;
     }
@@ -258,7 +265,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 		{
                 			//txDelay += SimTime() - packet.queuing_time;
                 			txDelay += SimTime() - packet.send_time;
-                			MAC_queue.DelFirstPacket();
+                            queueingDelay += SimTime() - packet.queuing_time;
+                            MAC_queue.DelFirstPacket();
                 			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
                 	}else
@@ -272,7 +280,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 		{
                 			//txDelay += SimTime() - packet.queuing_time;
                 			txDelay += SimTime() - packet.send_time;
-                			//cout << "Sta-" << node_id << endl;
+                            queueingDelay += SimTime() - packet.queuing_time;
+                            //cout << "Sta-" << node_id << endl;
                 			//cout << "***Adding to txDelay (" << successful_transmissions << ") " << SimTime() << " - " << packet.send_time << " (" << SimTime()-packet.send_time << ")"<< endl;
                 			MAC_queue.DelFirstPacket();
                 			if(i < packetDisposal-1){ 
@@ -288,6 +297,7 @@ void STA :: in_slot(SLOT_notification &slot)
                     successful_transmissions++;
                     //txDelay += SimTime() - packet.queuing_time;
                     txDelay += SimTime() - packet.send_time;
+                    queueingDelay += SimTime() - packet.queuing_time;
                     MAC_queue.DelFirstPacket();
                 }
                 

@@ -14,6 +14,7 @@ struct nodesAverage{
 	float JFI;
 	double bandwidth;
 	double delay;
+    double qDelay;
 	float backoffStage;
 	double throughputDCF;
 	double throughputECA;
@@ -127,8 +128,8 @@ int main(int argc, char *argv[])
         for(int j = 0; j < N; j++)
         {
             //execute script  
-            command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
-            //command << "/Users/L_SR/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            //command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            command << "/Users/Sanabriarusso/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
     
 	ofstream multiAverage;
 	multiAverage.open("Results/multiAverage.txt", ios::app);
-	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped 23.SxSlots 24.stdSxSlots 25.ColSlots 26.StdColSlots 27.EmptySlots 28.stdEmpty 29.totalSlots 30.stdTotalSlots 31.averageTAU 32.stdTAU 33.avgQSize 34.stdQSize 35.avgQEmpty 36.stdQEmpty" << endl;
+	multiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-JFI 5-stdJFI 6-Bandwidth 7-avgDelay 8-stdDelay 9-avgBackoffStage 10-stdBackoffStage 11-totalFractionOfCollisionSlots 12.stdCollidingSlots 13.avgThroughputDCF 14. stdThroughputDCF 15.avgThroughputECA 16.stdThroughputECA 17.Sum of 15 and 16 18. std of 17 19. AvgBlockingProb 20. StdBlockingProb 21. AvgDroppedPackets 22.StdDropped 23.SxSlots 24.stdSxSlots 25.ColSlots 26.StdColSlots 27.EmptySlots 28.stdEmpty 29.totalSlots 30.stdTotalSlots 31.averageTAU 32.stdTAU 33.avgQSize 34.stdQSize 35.avgQEmpty 36.stdQEmpty 37. avgQDelay 38. stdQDelay" << endl;
     
     while(getline(inputFile,input))
     {
@@ -294,6 +295,13 @@ int main(int argc, char *argv[])
     		qE >> qEmpty;
 	    	//cout << qEmpty << endl;
     		meanCarrier[iterator].avgQEmpty = qEmpty;
+
+            getline(tokenizer, token, ' ');
+            istringstream QDel(token);
+            double qDelays;
+            QDel >> qDelays;
+            //cout << qDelays << endl;
+            meanCarrier[iterator].qDelay = qDelays;
     	
     		iterator++;
     	}else
@@ -303,12 +311,16 @@ int main(int argc, char *argv[])
     		double numeratorJFI = 0;
     		double numeratorDelay = 0;
     		double numeratorSTDelay = 0;
+            double numeratorQDelay = 0;
+            double numeratorSTDQDelay = 0;
     		double average = 0;
     		double stDeviation = 0.0;
     		double stDeviationDelay = 0.0;
+            double stdQDelay = 0.0;
     		double avgJFI = 0;
     		double stdJFI = 0;
     		double avgDelay = 0;
+            double avgQDelay = 0;
     		double avgBOStage = 0;
     		double numSTDBOS = 0;
     		double stdBOS = 0;
@@ -347,6 +359,7 @@ int main(int argc, char *argv[])
     			numerator += meanCarrier[i].rate;
     			numeratorJFI += (meanCarrier[i].JFI);
     			numeratorDelay += (meanCarrier[i].delay);
+                numeratorQDelay += (meanCarrier[i].qDelay);
     			avgBOStage += (meanCarrier[i].backoffStage);
     			avgCP += (meanCarrier[i].cp);
     			avgThroughputDCF += (meanCarrier[i].throughputDCF);
@@ -365,6 +378,7 @@ int main(int argc, char *argv[])
     		average = numerator/iterator;
     		avgJFI = numeratorJFI/iterator;
     		avgDelay = numeratorDelay/iterator;
+            avgQDelay = numeratorQDelay/iterator;
     		avgBOStage /= iterator;
     		avgCP /= iterator;
     		avgThroughputDCF /= iterator;
@@ -390,6 +404,7 @@ int main(int argc, char *argv[])
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
     				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
+                    numeratorSTDelay += pow(meanCarrier[j].qDelay - avgQDelay,2);
     				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
     				numSTDBOS += pow((meanCarrier[j].backoffStage) - avgBOStage,2);
     				numCP += pow((meanCarrier[j].cp) - avgCP,2);
@@ -410,6 +425,7 @@ int main(int argc, char *argv[])
     		
     		stDeviation = sqrt((1./(iterator))*numerator2);
     		stDeviationDelay = sqrt((1./(iterator))*numeratorSTDelay);
+            stdQDelay = sqrt((1./(iterator))*numeratorSTDQDelay);
     		stdJFI = sqrt((1./(iterator))*numeratorJFI);
     		stdBOS = sqrt((1./(iterator))*numSTDBOS);
     		stdCP = sqrt((1./(iterator))*numCP);
@@ -426,7 +442,7 @@ int main(int argc, char *argv[])
     		stdQSize = sqrt((1./(iterator))*stdQSize);
     		stdQEmpty = sqrt((1./(iterator))*stdQEmpty);
     		    		
-    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << " " << avgSxSlots << " " << stdSxSlots << " " << avgColSlots << " " << stdColSlots << " " << avgEmptySlots << " " << stdEmptySlots << " " << avgTotalSlots << " " << stdTotalSlots << " " << avgTau << " " << stdTau << " " << avgQSize << " " << stdQSize << " " << avgQEmpty << " " << stdQEmpty << endl;
+    		multiAverage << meanCarrier[iterator-1].num << " " << average << " " << stDeviation << " " << avgJFI << " " << stdJFI << " " << meanCarrier[iterator-1].bandwidth << " " << avgDelay << " " << stDeviationDelay << " " << avgBOStage << " " << stdBOS << " " << avgCP << " " << stdCP << " " << avgThroughputDCF << " " << stdThroughputDCF << " " << avgThroughputECA << " " << stdThroughputECA << " " << avgSumThroughput << " " << stdSumThroughput << " " << avgPb << " " << stdPb << " " << avgDropped << " " << stdDropped << " " << avgSxSlots << " " << stdSxSlots << " " << avgColSlots << " " << stdColSlots << " " << avgEmptySlots << " " << stdEmptySlots << " " << avgTotalSlots << " " << stdTotalSlots << " " << avgTau << " " << stdTau << " " << avgQSize << " " << stdQSize << " " << avgQEmpty << " " << stdQEmpty << " " << avgQDelay << " " << stdQDelay << endl;
     		iterator = 0;
     		
     	}
@@ -453,7 +469,7 @@ int main(int argc, char *argv[])
     
 		ofstream staMultiAverage;
 		staMultiAverage.open("Results/staMultiAverage.txt", ios::app);
-		staMultiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-avgPc 5-stdPc 6-avgTAU 7-stdTAU 8-avgDelay 9-stdDelay 10-avgEmpty 11-stdEmpty 12-avgQSize 13-stdQSize 14-avgBackoffStage 15-stdBackoffStage 16-avgDropped 17-stdDropped" << endl;
+		staMultiAverage << "#1-sta 2-avgThroughput 3-stdThroughput 4-avgPc 5-stdPc 6-avgTAU 7-stdTAU 8-avgDelay 9-stdDelay 10-avgEmpty 11-stdEmpty 12-avgQSize 13-stdQSize 14-avgBackoffStage 15-stdBackoffStage 16-avgDropped 17-stdDropped 18-avgStaQDelay 19-stdStaQDelay" << endl;
     
     	if(!staInputFile)
     	{
@@ -464,7 +480,7 @@ int main(int argc, char *argv[])
 			{
 				for(int s = 0; s < n_max; s++)
 				{
-            		staInputFile >> staMeanCarrier[s][r].num >> staMeanCarrier[s][r].rate >> staMeanCarrier[s][r].cp >> staMeanCarrier[s][r].tau >> staMeanCarrier[s][r].delay >> staMeanCarrier[s][r].avgQEmpty >> staMeanCarrier[s][r].avgQSize >> staMeanCarrier[s][r].backoffStage >> staMeanCarrier[s][r].dropped;
+            		staInputFile >> staMeanCarrier[s][r].num >> staMeanCarrier[s][r].rate >> staMeanCarrier[s][r].cp >> staMeanCarrier[s][r].tau >> staMeanCarrier[s][r].delay >> staMeanCarrier[s][r].avgQEmpty >> staMeanCarrier[s][r].avgQSize >> staMeanCarrier[s][r].backoffStage >> staMeanCarrier[s][r].dropped >> staMeanCarrier[s][r].qDelay;
         		}
         	}
 	    }
@@ -478,6 +494,8 @@ int main(int argc, char *argv[])
 		double stdStaTAU = 0;
 		double avgStaDelay = 0;
 		double stdStaDelay = 0;
+        double avgStaQDelay = 0;
+        double stdStaQdelay = 0;
 		double avgStaQEmpty = 0;
 		double stdStaQEmpty = 0;
 		double avgStaQSize = 0;
@@ -495,6 +513,7 @@ int main(int argc, char *argv[])
 				avgStaPc += staMeanCarrier[i][j].cp;
 				avgStaTAU += staMeanCarrier[i][j].tau;
 				avgStaDelay += staMeanCarrier[i][j].delay;
+                avgStaQDelay += staMeanCarrier[i][j].qDelay;
 				avgStaQEmpty += staMeanCarrier[i][j].avgQEmpty;
 				avgStaQSize += staMeanCarrier[i][j].avgQSize;
 				avgStaBackoffStage += staMeanCarrier[i][j].backoffStage;
@@ -505,6 +524,7 @@ int main(int argc, char *argv[])
 			avgStaPc /= N;
 			avgStaTAU /= N;
 			avgStaDelay /= N;
+            avgStaQDelay /= N;
 			avgStaQEmpty /= N;
 			avgStaQSize /= N;
 			avgStaBackoffStage /= N;
@@ -517,6 +537,7 @@ int main(int argc, char *argv[])
 				stdStaPc += pow((staMeanCarrier[i][j].cp) - avgStaPc,2);
 				stdStaTAU += pow((staMeanCarrier[i][j].tau) - avgStaTAU,2);
 				stdStaDelay += pow((staMeanCarrier[i][j].delay) - avgStaDelay,2);
+                stdStaQdelay += pow((staMeanCarrier[i][j].qDelay) - avgStaQDelay,2);
 				stdStaQEmpty += pow((staMeanCarrier[i][j].avgQEmpty) - avgStaQEmpty,2);
 				stdStaQSize += pow((staMeanCarrier[i][j].avgQSize) - avgStaQSize,2);
 				stdStaBackoffStage += pow((staMeanCarrier[i][j].backoffStage) - avgStaBackoffStage,2);
@@ -526,13 +547,14 @@ int main(int argc, char *argv[])
 			stdStaPc = sqrt((1./(N))*stdStaPc);			
 			stdStaTAU = sqrt((1./(N))*stdStaTAU);
 			stdStaDelay = sqrt((1./(N))*stdStaDelay);
+            stdStaQdelay = sqrt((1./(N))*stdStaQdelay);
 			stdStaQEmpty = sqrt((1./(N))*stdStaQEmpty);
 			stdStaQSize = sqrt((1./(N))*stdStaQSize);
 			stdStaBackoffStage = sqrt((1./(N))*stdStaBackoffStage);
 			stdStaDropped = sqrt((1./(N))*stdStaDropped);
 			
 			//Writing in the output file
-			staMultiAverage << i << " " << avgStaRate << " " << stdStaRate << " " << avgStaPc << " " << stdStaPc << " " << avgStaTAU << " " << stdStaTAU << " " << avgStaDelay << " " << stdStaDelay << " " << avgStaQEmpty << " " << stdStaQEmpty << " " << avgStaQSize << " " << stdStaQSize << " " << avgStaBackoffStage << " " << stdStaBackoffStage << endl;
+			staMultiAverage << i << " " << avgStaRate << " " << stdStaRate << " " << avgStaPc << " " << stdStaPc << " " << avgStaTAU << " " << stdStaTAU << " " << avgStaDelay << " " << stdStaDelay << " " << avgStaQEmpty << " " << stdStaQEmpty << " " << avgStaQSize << " " << stdStaQSize << " " << avgStaBackoffStage << " " << stdStaBackoffStage << " " << avgStaQDelay << " " << stdStaQdelay << endl;
 			
 			avgStaRate = 0;
 			stdStaRate = 0;
@@ -542,6 +564,8 @@ int main(int argc, char *argv[])
 			stdStaTAU = 0;
 			avgStaDelay = 0;
 			stdStaDelay = 0;
+            avgStaQDelay = 0;
+            stdStaQdelay = 0;
 			avgStaQEmpty = 0;
 			stdStaQEmpty = 0;
 			avgStaQSize = 0;
