@@ -53,6 +53,7 @@ component STA : public TypeII
         double successful_transmissions;
         double channelAccesses;
         double droppedPackets; //due to retransmissions
+        double droppingOccassions;
         double packetDisposal;
         double packetDisposalRET; //disposal due to retransmissions
         double driftedSlots;
@@ -148,6 +149,7 @@ void STA :: Start()
     collisions = 0;
     successful_transmissions = 0.0;
     channelAccesses = 0.0;
+    droppingOccassions = 0.0;
     droppedPackets = 0;
     packetDisposal = 0;
     packetDisposalRET = 0;
@@ -184,8 +186,8 @@ void STA :: Stop()
     
     if(successful_transmissions > 0)
     {
-    	staDelay = txDelay / channelAccesses;
-        staQueueingDelay = queueingDelay / channelAccesses;
+    	staDelay = txDelay / (channelAccesses + droppingOccassions);
+        staQueueingDelay = queueingDelay / (successful_transmissions + droppedPackets);
     }else
     {
     	staDelay = 0;
@@ -361,7 +363,8 @@ void STA :: in_slot(SLOT_notification &slot)
                 /*We drop the packets that have reached the maximum retransmission limit*/
                 
                 if ((MAX_RET < txAttempt) && (txAttempt < (MAX_RET + MAXSTAGE + 1)))
-                {   
+                {
+                    droppingOccassions++;
                     //after dropping a frame in DCF, the backoff_stage is reset
                     if(hysteresis == 0) backoff_stage = 0;
                     
@@ -371,9 +374,13 @@ void STA :: in_slot(SLOT_notification &slot)
                     		//With maximum aggregation all packets are dropped
                     		packetDisposalRET = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                     		droppedPackets+=packetDisposalRET;
+                            //We also store the elapsed time until the dropping of the packet
+                            //given that it affects the inter-transmission time
+                            txDelay += SimTime() - packet.send_time;
                     		txAttempt = 0;
                     		for(int i = 0; i < packetDisposalRET; i++)
                     		{
+                                queueingDelay += SimTime() - packet.queuing_time;
                     			MAC_queue.DelFirstPacket();
                     		}
                     	}else
@@ -386,8 +393,10 @@ void STA :: in_slot(SLOT_notification &slot)
                     			packetDisposalRET = std::min((int)(pow(2,pickup_backoff_stage)-pow(2,previous_pickup_backoff_stage)),MAC_queue.QueueSize());         		
                     		}
                     		droppedPackets+=packetDisposalRET;
+                            txDelay += SimTime() - packet.send_time;
                     		for(int i = 0; i < packetDisposalRET; i++)
                     		{
+                                queueingDelay += SimTime() - packet.queuing_time;
                     			MAC_queue.DelFirstPacket();
                     		}
                     		previous_pickup_backoff_stage = pickup_backoff_stage;
@@ -397,6 +406,8 @@ void STA :: in_slot(SLOT_notification &slot)
                     {
                     	txAttempt = 0;
                     	droppedPackets++;
+                        txDelay += SimTime() - packet.send_time;
+                        queueingDelay += SimTime() - packet.queuing_time;
                     	MAC_queue.DelFirstPacket();
                  	}
                  	
@@ -407,11 +418,13 @@ void STA :: in_slot(SLOT_notification &slot)
                  		//and reset the counter.
                  		if((txAttempt == MAX_RET + MAXSTAGE) || (pickup_backoff_stage == MAXSTAGE))
                  		{
+                            queueingDelay += SimTime() - packet.queuing_time;
                  			MAC_queue.DelFirstPacket();
                  			droppedPackets++;
                  			txAttempt = 0;
                  			packetDisposalRET = 0;
                  		}
+                        queueingDelay += SimTime() - packet.queuing_time;
                  		packet = MAC_queue.GetFirstPacket();
                  		packet.send_time = SimTime();
                  		//cout << "STA-" << node_id << " taking packet " << successful_transmissions << " at " << SimTime() << " (RET)" << endl;
