@@ -51,6 +51,7 @@ component STA : public TypeII
         double collisions;
         double total_transmissions;
         double successful_transmissions;
+        double channelAccesses;
         double droppedPackets; //due to retransmissions
         double packetDisposal;
         double packetDisposalRET; //disposal due to retransmissions
@@ -146,6 +147,7 @@ void STA :: Start()
     txAttempt = 0;
     collisions = 0;
     successful_transmissions = 0.0;
+    channelAccesses = 0.0;
     droppedPackets = 0;
     packetDisposal = 0;
     packetDisposalRET = 0;
@@ -182,8 +184,8 @@ void STA :: Stop()
     
     if(successful_transmissions > 0)
     {
-    	staDelay = (float)txDelay / (float)successful_transmissions;
-        staQueueingDelay = queueingDelay / successful_transmissions;
+    	staDelay = txDelay / channelAccesses;
+        staQueueingDelay = queueingDelay / channelAccesses;
     }else
     {
     	staDelay = 0;
@@ -253,6 +255,7 @@ void STA :: in_slot(SLOT_notification &slot)
         {             
             if (backoff_counter == 0) // I have transmitted
             {
+                channelAccesses++;
                 //Sent as many packets as was set in the past packet's structure
                 if(fairShare > 0)
                 {
@@ -260,12 +263,11 @@ void STA :: in_slot(SLOT_notification &slot)
                 	{
                 		packetDisposal = std::min((int)pow(2,MAXSTAGE),MAC_queue.QueueSize());
                 		successful_transmissions += packetDisposal;
+                        txDelay += SimTime() - packet.send_time;
                 		//Deleting as many packets as maxAggregation
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
-                			//txDelay += SimTime() - packet.queuing_time;
-                			txDelay += SimTime() - packet.send_time;
-                            queueingDelay += SimTime() - packet.queuing_time;
+                			queueingDelay += SimTime() - packet.queuing_time;
                             MAC_queue.DelFirstPacket();
                 			if(i < packetDisposal-1) packet = MAC_queue.GetFirstPacket();
                     	}
@@ -274,12 +276,11 @@ void STA :: in_slot(SLOT_notification &slot)
                 		packetDisposal = std::min((int)pow(2,backoff_stage),MAC_queue.QueueSize());
                 		//cout << "---STA-" << node_id << " sent packet " << successful_transmissions << " at " << SimTime() << endl;
                 		successful_transmissions += packetDisposal;
+                        txDelay += SimTime() - packet.send_time;
                 		//if(node_id==10)cout << "Disposal: " << packetDisposal << ", Q: " << MAC_queue.QueueSize() << endl;
                 		//Deleting as many packets as the aggregation field in the sent packet structure
                 		for(int i = 0; i < packetDisposal; i++)
                 		{
-                			//txDelay += SimTime() - packet.queuing_time;
-                			txDelay += SimTime() - packet.send_time;
                             queueingDelay += SimTime() - packet.queuing_time;
                             //cout << "Sta-" << node_id << endl;
                 			//cout << "***Adding to txDelay (" << successful_transmissions << ") " << SimTime() << " - " << packet.send_time << " (" << SimTime()-packet.send_time << ")"<< endl;
@@ -295,7 +296,6 @@ void STA :: in_slot(SLOT_notification &slot)
                 }else
                 {
                     successful_transmissions++;
-                    //txDelay += SimTime() - packet.queuing_time;
                     txDelay += SimTime() - packet.send_time;
                     queueingDelay += SimTime() - packet.queuing_time;
                     MAC_queue.DelFirstPacket();
