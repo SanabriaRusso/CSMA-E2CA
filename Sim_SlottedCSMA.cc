@@ -214,14 +214,14 @@ void SlottedCSMA :: Stop()
 	    
 	    //Below is the if statement for checking that the number of incoming packets is equal to the transmitted + blocked + the ones in the queue
 	    //The code was commented because we are deactivating the traffic generator to derive some metrics quicker
-	    /*if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
+	    if(stas[i].incoming_packets == stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)
 	    {	
 	    	cout << "Station " << i << ": is alright" << endl;
 	    }else
 	    {
 	    	cout << "Station " << i << ": differs in " << fabs(stas[i].incoming_packets - (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets)) << endl;
 	    	//cout << "---Sx + Blocked + qSize + dropped - initialQ = " << (stas[i].successful_transmissions + stas[i].blocked_packets + stas[i].qSize + stas[i].droppedPackets) - stas[i].incoming_packets << endl;
-	    }*/
+	    }
 	    
 	    //Gathering the average blocking probability
 	    systemAvgBlockingProbability += stas[i].blockingProbability;
@@ -310,7 +310,7 @@ void SlottedCSMA :: Stop()
 	cout << "***Debugg***" << endl;
 	cout << "Average backoff stage [0-5]: " << avgBackoffStage << endl;
 	cout << "Average number of dropped packets: " << accumaltedDroppedPackets/Nodes << endl;
-	//cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
+	cout << "Average blocking proability: " << systemAvgBlockingProbability << endl;
 	cout << "Number of times each MAC queue emptied: " << QEmpties << endl;
 	cout << "Slot drift probability: " << drift*100 << "%" << endl;
 	cout << "Sx Slots: " << overall_successful_tx_slots << endl;

@@ -162,6 +162,8 @@ int main(int argc, char *argv[])
     	{
     		istringstream tokenizer(input);
     		string token;
+
+            //1
     	
 	    	getline(tokenizer, token, ' ');
     		istringstream stations(token);
@@ -170,6 +172,8 @@ int main(int argc, char *argv[])
 	    	//cout << s << endl;
     		meanCarrier[iterator].num = s;
     	
+            //2
+
 	    	getline(tokenizer, token, ' ');
     		istringstream rate(token);
 	    	double r;
@@ -177,6 +181,8 @@ int main(int argc, char *argv[])
 	    	//cout << r << endl;
     		meanCarrier[iterator].rate = r;
     		
+            //3
+
     		getline(tokenizer, token, ' ');
     		istringstream colProb(token);
 	    	double cp;
@@ -184,6 +190,8 @@ int main(int argc, char *argv[])
 	    	//cout << cp << endl;
     		meanCarrier[iterator].cp = cp;
     		
+            //4
+
     		getline(tokenizer, token, ' ');
     		istringstream jainsIndex(token);
 	    	double jfi;
@@ -191,6 +199,8 @@ int main(int argc, char *argv[])
 	    	//cout << jfi << endl;
     		meanCarrier[iterator].JFI = jfi;
     		
+            //5
+
     		getline(tokenizer, token, ' ');
     		istringstream bandwidth(token);
 	    	double bw;
@@ -198,12 +208,16 @@ int main(int argc, char *argv[])
 	    	//cout << bw << endl;
     		meanCarrier[iterator].bandwidth = bw;
     		
+            //6
+
     		getline(tokenizer, token, ' ');
     		istringstream delay(token);
 	    	double sysDelay;
     		delay >> sysDelay;
 	    	//cout << sysDelay << endl;
     		meanCarrier[iterator].delay = sysDelay; 
+
+            //7
 
     		getline(tokenizer, token, ' ');
     		istringstream backoffStage(token);
@@ -212,6 +226,8 @@ int main(int argc, char *argv[])
 	    	//cout << avgBackoffStage << endl;
     		meanCarrier[iterator].backoffStage = avgBackoffStage;
     		
+            //8
+
     		getline(tokenizer, token, ' ');
     		istringstream DCF(token);
 	    	double throughputDCF;
@@ -219,6 +235,8 @@ int main(int argc, char *argv[])
 	    	//cout << throughputDCF << endl;
     		meanCarrier[iterator].throughputDCF = throughputDCF;
     		
+            //9
+
     		getline(tokenizer, token, ' ');
     		istringstream ECA(token);
 	    	double throughputECA;
@@ -226,6 +244,8 @@ int main(int argc, char *argv[])
 	    	//cout << throughputECA << endl;
     		meanCarrier[iterator].throughputECA = throughputECA;
     		
+            //10
+
     		getline(tokenizer, token, ' ');
     		istringstream sum(token);
 	    	double sumDCFandECA;
@@ -233,13 +253,17 @@ int main(int argc, char *argv[])
 	    	//cout << sumDCFandECA << endl;
     		meanCarrier[iterator].sumDCFandECA = sumDCFandECA;
     		
-    		getline(tokenizer, token, ' ');
+    		//11
+
+            getline(tokenizer, token, ' ');
     		istringstream Pb(token);
 	    	double blockingProbability;
     		Pb >> blockingProbability;
 	    	//cout << blockingProbability << endl;
     		meanCarrier[iterator].Pb = blockingProbability;
     		
+            //12
+
     		getline(tokenizer, token, ' ');
     		istringstream drop(token);
 	    	double droppedPackets;
@@ -247,6 +271,8 @@ int main(int argc, char *argv[])
 	    	//cout << droppedPackets << endl;
     		meanCarrier[iterator].dropped = droppedPackets;
     		
+            //13
+
     		getline(tokenizer, token, ' ');
     		istringstream sx(token);
 	    	double successSlots;
@@ -254,6 +280,8 @@ int main(int argc, char *argv[])
 	    	//cout << successSlots << endl;
     		meanCarrier[iterator].sx = successSlots;
     		
+            //14
+
     		getline(tokenizer, token, ' ');
     		istringstream cS(token);
 	    	double colSlots;
@@ -261,6 +289,8 @@ int main(int argc, char *argv[])
 	    	//cout << colSlots << endl;
     		meanCarrier[iterator].colSlots = colSlots;
     		
+            //15
+
     		getline(tokenizer, token, ' ');
     		istringstream empty(token);
 	    	double emptySlots;
@@ -268,6 +298,8 @@ int main(int argc, char *argv[])
 	    	//cout << emptySlots << endl;
     		meanCarrier[iterator].empty = emptySlots;
     		
+            //16
+
     		getline(tokenizer, token, ' ');
     		istringstream total(token);
 	    	double totalSlots;
@@ -275,6 +307,8 @@ int main(int argc, char *argv[])
 	    	//cout << totalSlots << endl;
     		meanCarrier[iterator].totalSlots = totalSlots;
     		
+            //17
+
     		getline(tokenizer, token, ' ');
     		istringstream Pt(token);
 	    	double tau;
@@ -282,6 +316,8 @@ int main(int argc, char *argv[])
 	    	//cout << tau << endl;
     		meanCarrier[iterator].tau = tau;
     		
+            //18
+
     		getline(tokenizer, token, ' ');
     		istringstream q(token);
 	    	double qSize;
@@ -289,12 +325,16 @@ int main(int argc, char *argv[])
 	    	//cout << qSize << endl;
     		meanCarrier[iterator].avgQSize = qSize;
     		
+            //19
+
     		getline(tokenizer, token, ' ');
     		istringstream qE(token);
 	    	double qEmpty;
     		qE >> qEmpty;
 	    	//cout << qEmpty << endl;
     		meanCarrier[iterator].avgQEmpty = qEmpty;
+
+            //20
 
             getline(tokenizer, token, ' ');
             istringstream QDel(token);
