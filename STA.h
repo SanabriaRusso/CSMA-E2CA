@@ -424,7 +424,7 @@ void STA :: in_slot(SLOT_notification &slot)
                  			txAttempt = 0;
                  			packetDisposalRET = 0;
                  		}
-                        droppedPackets++;
+                        //droppedPackets++;
                         queueingDelay += SimTime() - packet.queuing_time;
                  		packet = MAC_queue.GetFirstPacket();
                  		packet.send_time = SimTime();

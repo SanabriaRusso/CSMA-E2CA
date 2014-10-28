@@ -11,10 +11,10 @@
 #define SIFS 10E-6
 #define L_ack 112*/
 
-//Complying with 802.11n
-#define SLOT 16e-06
-#define DIFS 34e-06
-#define SIFS 9e-06
+//Complying with 802.11n at 2.4 GHz
+#define SLOT 9e-06 // was 16e-06
+#define DIFS 28e-06 // was 34e-06
+#define SIFS 10e-06 // was9e-06
 #define LDBPS 256
 #define TSYM 4e-06
 			
