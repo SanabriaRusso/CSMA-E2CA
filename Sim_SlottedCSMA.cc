@@ -82,6 +82,7 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].driftProbability = slotDrift;
 		stas[n].cut = intCut;     
 		stas[n].maxAggregation = maxAggregation;
+		
 
 
 		// Traffic Source
@@ -258,6 +259,7 @@ void SlottedCSMA :: Stop()
 	
 	//802.11n version
 	overall_throughput = (channel.totalBitsSent)/SimTime();
+
 
 	ofstream statistics;
 	statistics.open("Results/multiSim.txt", ios::app);

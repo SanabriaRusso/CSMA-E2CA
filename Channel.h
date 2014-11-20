@@ -111,8 +111,9 @@ void Channel :: Stop()
 	printf("\n\n");
 	printf("---- Channel ----\n");
 	printf("Slot Status Probabilities (channel point of view): Empty = %e, Succesful = %e, Collision = %e \n",empty_slots/total_slots,succesful_slots/total_slots,collision_slots/total_slots);
-	printf("Total packets sent to the Channel: %d", (int)succesful_slots);
+	printf("Total packets sent to the Channel: %d\n", (int)succesful_slots);
 	printf("\n\n");
+	cout << succ_tx_duration << " " << L_max << endl;
 	
 	slotsInTime.close();
 };
@@ -202,6 +203,7 @@ void Channel :: in_packet(Packet &packet)
 	}
 	
 	succ_tx_duration = 32e-06 + ceil((16 + aggregation*(32+(L_max*8)+288) + 6)/LDBPS)*TSYM + SIFS + TBack + DIFS + empty_slot_duration;
+
 	
 	collision_duration = succ_tx_duration;
 	

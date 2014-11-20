@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
         {
             //execute script  
             //command << "/home/lsr/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
-            command << "/Users/Sanabriarusso/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
+            command << "/Users/L_SR/Dropbox/PhD/NeTS/git/CSMA-E2CA/Sim_SlottedCSMA" << " " << time << " " << i << " 1024 " << b_min << " 1 " << stickiness << " " << stageStickiness << " " << fairShare << " " << error/100 << " " << drift/100  << " " << DCF/100 << " " << maxAggregation << " " << j << endl;
             //cout << command.str() << endl;
             cout << endl;
             cout << "Trying with " << i << " stations." << endl << endl;
@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
     			{
     				numerator2 += pow(meanCarrier[j].rate - average,2);
     				numeratorSTDelay += pow(meanCarrier[j].delay - avgDelay,2);
-                    numeratorSTDelay += pow(meanCarrier[j].qDelay - avgQDelay,2);
+                    numeratorQDelay += pow(meanCarrier[j].qDelay - avgQDelay,2);
     				numeratorJFI += pow((meanCarrier[j].JFI) - avgJFI,2);
     				numSTDBOS += pow((meanCarrier[j].backoffStage) - avgBOStage,2);
     				numCP += pow((meanCarrier[j].cp) - avgCP,2);
