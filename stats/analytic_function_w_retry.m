@@ -1,27 +1,27 @@
 function throughput = analytic_function_w_retry(number_of_stations,CWmin,m,mr)
 
 % MAC Parameters (802.11b specifications)
-   PHY_RATE = 1E6;
-   RBASIC = 1E6;
-   RDATA = 11E6;
-   PCLP_PREAMBLE=144; % bits (Long preamble)
-   PCLP_HEADER=48; % bits
-   PHY_HEADER=PCLP_PREAMBLE+PCLP_HEADER;
-   MAC_HEADER=272; % bits (including the CRC)
-   L_ACK=112; %bits
-   RTS=160; %bits
-   CTS=112; %bits
-   DIFS=50E-6;
-   SIFS=10E-6;
-   SLOT_TIME=20E-6;
-   EIFS=SIFS+DIFS+((144+48+112)/RBASIC);
+%    PHY_RATE = 1E6;
+%    RBASIC = 1E6;
+%    RDATA = 11E6;
+%    PCLP_PREAMBLE=144; % bits (Long preamble)
+%    PCLP_HEADER=48; % bits
+%    PHY_HEADER=PCLP_PREAMBLE+PCLP_HEADER;
+%    MAC_HEADER=272; % bits (including the CRC)
+%    L_ACK=112; %bits
+%    RTS=160; %bits
+%    CTS=112; %bits
+%    DIFS=50E-6;
+%    SIFS=10E-6;
+     SLOT_TIME=9E-6;
+%    EIFS=SIFS+DIFS+((144+48+112)/RBASIC);
+% 
+     L=12294;
+%    Ts=((PCLP_PREAMBLE+PCLP_HEADER)/PHY_RATE)+((L+MAC_HEADER)/RDATA)+SIFS+((PCLP_PREAMBLE+PCLP_HEADER)/PHY_RATE)+(L_ACK/RBASIC)+DIFS;
+%    Tc=((PCLP_PREAMBLE+PCLP_HEADER)/RBASIC)+((L+MAC_HEADER)/RDATA)+EIFS;
 
-   L=1024*8;
-   Ts=((PCLP_PREAMBLE+PCLP_HEADER)/PHY_RATE)+((L+MAC_HEADER)/RDATA)+SIFS+((PCLP_PREAMBLE+PCLP_HEADER)/PHY_RATE)+(L_ACK/RBASIC)+DIFS;
-   Tc=((PCLP_PREAMBLE+PCLP_HEADER)/RBASIC)+((L+MAC_HEADER)/RDATA)+EIFS;
-
-   Ts
-   Tc
+   Ts = 421.5 * 1e-06
+   Tc = Ts;
 
 
     W=CWmin;
@@ -34,4 +34,4 @@ function throughput = analytic_function_w_retry(number_of_stations,CWmin,m,mr)
 
     %See that the channel object in the simulator. It has all the pe, ps and pc.
     
-endfunction
+end

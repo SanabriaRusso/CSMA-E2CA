@@ -13,10 +13,10 @@ int backoff(int backoff_stage, int stickiness, float driftProbability){
 
 	int backoff_counter = 0;
 	
-	if(stickiness != 0){
+	if(stickiness > 0){
 		backoff_counter = (int)(pow(2,backoff_stage)*CWMIN/2)-1;
 	}else{
-		backoff_counter = rand() % (int)(pow(2,backoff_stage)*CWMIN);
+		backoff_counter = rand() % (int)(pow(2,backoff_stage)*CWMIN-1)+1;
 	}
 	
 	//cout << "Backoff before slot drift: " << backoff_counter << endl;

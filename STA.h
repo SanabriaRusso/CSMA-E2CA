@@ -111,28 +111,32 @@ void STA :: Setup()
 
 void STA :: Start()
 {
-	if(node_id < cut)
-	{
-		//cout << node_id << ": I am using DCF";
-		DCF = 1;
-		system_stickiness = 0;
-		station_stickiness = 0;
-		hysteresis = 0;
-		//Set to 1 when trying maximum aggregation in mixed scenario. 0 Otherwise
-		if(maxAggregation > 0)
-		{
-			fairShare = 1;
-			//cout << " with maximum aggregation" << endl;
-		}else
-		{
-			fairShare = 0;
-			//cout << " without aggregation" << endl;
-		}
-	}else
-	{
-		//cout << node_id << ": I am not using DCF" << endl;
-		DCF = 0;
-	}
+    station_stickiness = system_stickiness;
+    DCF = 1;
+    if(station_stickiness == 1) DCF = 0;
+
+	// if(node_id < cut)
+	// {
+	// 	//cout << node_id << ": I am using DCF";
+	// 	DCF = 1;
+	// 	system_stickiness = 0;
+	// 	station_stickiness = system_stickiness;
+	// 	hysteresis = 0;
+	// 	//Set to 1 when trying maximum aggregation in mixed scenario. 0 Otherwise
+	// 	if(maxAggregation > 0)
+	// 	{
+	// 		fairShare = 1;
+	// 		//cout << " with maximum aggregation" << endl;
+	// 	}else
+	// 	{
+	// 		fairShare = 0;
+	// 		//cout << " without aggregation" << endl;
+	// 	}
+	// }else
+	// {
+	// 	//cout << node_id << ": I am not using DCF" << endl;
+	// 	DCF = 0;
+	// }
 	
     backoff_counter = (int)Random(pow(2,backoff_stage)*CWMIN);
     backoff_stage = 0;

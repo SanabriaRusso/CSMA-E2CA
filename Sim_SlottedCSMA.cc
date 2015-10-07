@@ -76,7 +76,6 @@ void SlottedCSMA :: Setup(int Sim_Id, int NumNodes, int PacketLength, double Ban
 		stas[n].node_id = n;
 		stas[n].K = 1000;
 		stas[n].system_stickiness = Stickiness;
-		stas[n].station_stickiness = 0;
 		stas[n].hysteresis = hysteresis;
 		stas[n].fairShare = fairShare;
 		stas[n].driftProbability = slotDrift;

@@ -1,3 +1,4 @@
+stats/
 fromTheOffice/
 Sim_SlottedCSMA
 /COST/cxx2
@@ -6,19 +7,10 @@ Sim_SlottedCSMA
 *.txt
 *.gp
 *.swp*
-Results/bugs_OLD/
-Results/multiSim/delay/old/
-Results/multiSim/old/
-Results/multiSim/slotsInTime/500rep/
-Results/multiSim/slotsInTime/lab/
-Results/multiSim/slotsInTime/old/
-Results/multiSim/slotsInTime/possiblyGood/
-Results/multiSim/slotsInTime/raw/
-Results/old/
+Results/
 Sim_SlottedCSMA (lsr-NeTS's conflicted copy 2013-01-23)
 multiSim
 multiSim2.cpp
-stats/stats-11n.h
 *.DS_Store
 includes/testBackoff
 includes/testBackoff.cpp
